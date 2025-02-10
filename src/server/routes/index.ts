@@ -84,6 +84,8 @@ router.get('/sale/complete/:id', ensureAuthenticated, ensureAdmin, SaleDetailCon
 // USER
 router.get('/role/get', UserController.getRole);
 router.post('/login', UserController.signInValidation, UserController.signIn);
+router.delete('/user/:id', UserController.deleteByIdValidation, UserController.deleteById);
+router.get('/user', ensureAuthenticated, ensureAdmin, UserController.getAllValidation, UserController.getAll);
 router.post('/register', ensureAuthenticated, ensureAdmin, UserController.createValidation, UserController.signUp);
 
 
