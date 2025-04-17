@@ -12,7 +12,7 @@ const sign = (data: IJwtData) => {
     if (!process.env.JWT_KEY) return 'JWT_KEY_NOT_FOUND';
 
 
-    return jwt.sign(data, process.env.JWT_KEY, { expiresIn: '30d' });
+    return jwt.sign(data, process.env.JWT_KEY);
 };
 
 
