@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from 'express';
 import * as yup from 'yup';
 import { validation } from '../../shared/middleware';
-import { addDays } from 'date-fns';
+import { addDays, subYears } from 'date-fns';
 import { IPayment } from '../../database/models';
 import { StatusCodes } from 'http-status-codes';
 import { PaymentProvider } from '../../database/providers/Payment';
@@ -21,16 +21,18 @@ export const createValidation = validation({
 export const create: RequestHandler = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
     const code = req.body.code;
     const baseDate = '1997-10-08';
+    const newBaseDate = '2022-05-30';
     const days = Number(code.substring(33, 37));
-
-    const expiration = addDays(baseDate, days);
+    const yearAgo = subYears(new Date(), 1);
+    let expiration = addDays(baseDate, days);
+    if (expiration <= yearAgo)
+        expiration = addDays(newBaseDate, days);
     const value = Number(code.substring(37)) / 100;
     const obj = {
         ...req.body,
         value,
         expiration
     };
-    console.log(obj);
     const result = await PaymentProvider.create(obj);
     if (result instanceof Error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
