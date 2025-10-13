@@ -8,10 +8,12 @@ import {
     IPayment,
     ISupplier,
     IValidity,
+    IPurchases,
     IProdOutput,
     ICashOutflow,
     ISaleDetails,
     IProduct_group,
+    IPurchaseDetails
 } from '../../models';
 
 declare module 'knex/types/tables' {
@@ -25,9 +27,11 @@ declare module 'knex/types/tables' {
         payments: IPayment;
         suppliers: ISupplier;
         validities: IValidity;
+        purchases: IPurchases;
         prod_output: IProdOutput;
         sale_details: ISaleDetails;
         cash_outflows: ICashOutflow;
         product_groups: IProduct_group;
+        purchase_details: IPurchaseDetails;
     }
 }
