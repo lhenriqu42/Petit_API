@@ -1,16 +1,17 @@
 import {
     UserController,
+    StockController,
     ProductController,
     FincashController,
     PaymentController,
     SupplierController,
     ValidityController,
+    PurchaseController,
+    ProdGroupController,
     SaleDetailController,
     CashOutflowController,
 } from './../controllers';
 import { Router } from 'express';
-import { StockController } from '../controllers/Stock';
-import { ProdGroupController } from '../controllers/ProductGroup';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
 
 const router = Router();
@@ -139,5 +140,8 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 
 
 
+// PURCHASE
+router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
+router.get('/purchase', ensureAuthenticated, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
 
 export { router };
