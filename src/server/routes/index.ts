@@ -1,5 +1,6 @@
 import {
     UserController,
+    PackController,
     StockController,
     ProductController,
     FincashController,
@@ -143,5 +144,9 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 // PURCHASE
 router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
 router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
+
+// PACK
+router.post('/pack', ensureAuthenticated, PackController.createValidation, PackController.create);
+router.get('/pack', ensureAuthenticated, PackController.getPacksValidation, PackController.getPacks);
 
 export { router };

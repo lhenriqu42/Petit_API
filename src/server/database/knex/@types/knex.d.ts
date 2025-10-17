@@ -1,6 +1,7 @@
 import {
     IUser,
     ISale,
+    IPack,
     IGroup,
     IStock,
     IProduct,
@@ -20,6 +21,7 @@ declare module 'knex/types/tables' {
     interface Tables {
         users: IUser;
         sales: ISale;
+        packs: IPack;
         groups: IGroup;
         stocks: IStock;
         products: IProduct;

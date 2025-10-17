@@ -14,4 +14,5 @@ export enum ETableNames {
     payments = 'payments',
     purchases = 'purchases',
     purchase_details = 'purchase_details',
+    packs = 'packs',
 }

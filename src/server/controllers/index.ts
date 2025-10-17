@@ -1,4 +1,5 @@
 export * from './User';
+export * from './Pack';
 export * from './Stock';
 export * from './Fincash';
 export * from './Product';
