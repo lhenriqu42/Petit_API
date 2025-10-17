@@ -31,9 +31,16 @@ export const getPurchases = async (page: number, limit: number): Promise<IRespon
     try {
 
         const result = await Knex<IPurchases>(ETableNames.purchases)
-            .select('*', 'suppliers.name as supplier_name')
+            .select(
+                `${ETableNames.purchases}.id`,
+                `${ETableNames.purchases}.supplier_id`,
+                `${ETableNames.purchases}.total_value`,
+                `${ETableNames.purchases}.created_at`,
+                `${ETableNames.purchases}.updated_at`,
+                `${ETableNames.suppliers}.name as supplier_name`,
+            )
             .join(ETableNames.suppliers, 'suppliers.id', 'purchases.supplier_id')
-            .orderBy('purchases.id', 'desc')
+            .orderBy(`${ETableNames.purchases}.id`, 'desc')
             .offset((page - 1) * limit)
             .limit(limit);
         const total = await count();
