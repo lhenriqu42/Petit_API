@@ -9,6 +9,7 @@ import {
     IPayment,
     ISupplier,
     IValidity,
+    IProdPack,
     IPurchases,
     IProdOutput,
     ICashOutflow,
@@ -28,6 +29,7 @@ declare module 'knex/types/tables' {
         fincashs: IFincash;
         payments: IPayment;
         suppliers: ISupplier;
+        prod_packs: IProdPack;
         validities: IValidity;
         purchases: IPurchases;
         prod_output: IProdOutput;
