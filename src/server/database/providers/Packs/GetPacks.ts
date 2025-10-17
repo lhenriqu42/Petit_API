@@ -4,8 +4,9 @@ import { IPack } from '../../models';
 
 interface IResponse {
     totalCount: number,
-    packs: (IPack & { prod_code: string, prod_name: string })[]
-
+    packs: (IPack & {
+        products_count: number;
+    })[]
 }
 
 const count = async (): Promise<number | Error> => {
@@ -27,18 +28,22 @@ export const getPacks = async (page: number, limit: number): Promise<IResponse |
         const result = await Knex<IPack>(ETableNames.packs)
             .select(
                 `${ETableNames.packs}.id`,
-                `${ETableNames.packs}.prod_id`,
                 `${ETableNames.packs}.description`,
                 `${ETableNames.packs}.prod_qnt`,
                 `${ETableNames.packs}.created_at`,
                 `${ETableNames.packs}.updated_at`,
-                `${ETableNames.products}.code as prod_code`,
-                `${ETableNames.products}.name as prod_name`,
+                Knex.raw(
+                    `(
+                    SELECT COUNT(*)
+                    FROM ${ETableNames.prod_packs}
+                    WHERE ${ETableNames.prod_packs}.pack_id = ${ETableNames.packs}.id
+                    ) AS products_count`
+                )
             )
-            .join(ETableNames.products, 'products.id', 'packs.prod_id')
-            .orderBy(`${ETableNames.products}.id`, 'desc')
+            .orderBy(`${ETableNames.packs}.id`, 'desc')
             .offset((page - 1) * limit)
             .limit(limit);
+
         const total = await count();
         if (total instanceof Error) return total;
         return { totalCount: total, packs: result };

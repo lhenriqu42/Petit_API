@@ -9,7 +9,6 @@ import { IRequestBody } from '../../database/providers/Packs/Create';
 interface IBodyProps extends IRequestBody { }
 
 const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
-    prod_id: yup.number().required().moreThan(0),
     description: yup.string().required().min(3).max(255),
     prod_qnt: yup.number().required().moreThan(0),
 });
