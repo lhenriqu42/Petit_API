@@ -148,6 +148,6 @@ router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, 
 // PACK
 router.post('/pack', ensureAuthenticated, PackController.createValidation, PackController.create);
 router.get('/pack', ensureAuthenticated, PackController.getPacksValidation, PackController.getPacks);
-router.get('/pack/:id', ensureAuthenticated, PackController.getPacksByProdValidation, PackController.getPacksByProd);
+router.get('/pack/:prodId', ensureAuthenticated, PackController.getPacksByProdValidation, PackController.getPacksByProd);
 
 export { router };

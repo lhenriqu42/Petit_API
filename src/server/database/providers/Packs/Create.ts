@@ -13,8 +13,12 @@ export const create = async (request: IRequestBody): Promise<number | Error> => 
         const product = await Knex(ETableNames.products).where('id', request.prod_id).first();
         if (!product) return new Error('Product not found');
 
-        const [id] = await Knex(ETableNames.packs).insert({ ...request });
-        if (id) return id;
+        const [result] = await Knex(ETableNames.packs).insert({ ...request }).returning('id');
+        if (typeof result === 'object') {
+            return result.id;
+        } else if (typeof result === 'number') {
+            return result;
+        }
         return new Error('Register Failed');
     } catch (e) {
         console.log(e);
