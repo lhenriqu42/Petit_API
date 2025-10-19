@@ -1,7 +1,7 @@
-import * as create from './Create';
-import * as getPurchases from './GetPurchases';
+// import * as create from './Create';
+// import * as getPurchases from './GetPurchases';
 
-export const PurchaseController = {
-    ...create,
-    ...getPurchases
-};
+// export const PurchaseController = {
+//     ...create,
+//     ...getPurchases
+// };

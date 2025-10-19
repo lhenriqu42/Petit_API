@@ -22,7 +22,9 @@ export const getProdsByPack = async (page: number, limit: number, packId: number
             .select('prod_id')
             .where('pack_id', packId)
             .then(rows => rows.map(row => row.prod_id));
-
+        if (productIds.length === 0) {
+            return { totalCount: 0, products: [] };
+        }
         const prods = await Knex<IProduct>(ETableNames.products)
             .select('*')
             .whereIn('id', productIds)

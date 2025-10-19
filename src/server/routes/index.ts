@@ -7,7 +7,7 @@ import {
     PaymentController,
     SupplierController,
     ValidityController,
-    PurchaseController,
+    // PurchaseController,
     ProdGroupController,
     SaleDetailController,
     CashOutflowController,
@@ -142,13 +142,15 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 
 
 // PURCHASE
-router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
-router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
+// router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
+// router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
 
 
 
 // PACK
 router.post('/pack', ensureAuthenticated, PackController.createValidation, PackController.create);
+router.post('/pack/prod/:prodId', ensureAuthenticated, PackController.putPacksInProdValidation, PackController.putPacksInProd);
+router.post('/pack/pack/:packId', ensureAuthenticated, PackController.putProdsInPackValidation, PackController.putProdsInPack);
 router.get('/pack', ensureAuthenticated, PackController.getPacksValidation, PackController.getPacks);
 router.get('/pack/:prodId', ensureAuthenticated, PackController.getPacksByProdValidation, PackController.getPacksByProd);
 router.get('/pack/getProds/:packId', ensureAuthenticated, PackController.getProdsByPackValidation, PackController.getProdsByPack);

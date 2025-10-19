@@ -4,16 +4,14 @@ import { IPack } from '../../models';
 
 interface IResponse {
     totalCount: number,
-    packs: (IPack & {
-        products_count: number;
-    })[]
+    packs: IPack[]
 }
 
-const count = async (prod_id: number): Promise<number | Error> => {
+const count = async (pack_ids: number[]): Promise<number | Error> => {
     try {
         const [{ count }] = await Knex(ETableNames.packs)
             .count<[{ count: number }]>('* as count')
-            .where('prod_id', prod_id);
+            .whereIn('id', pack_ids);
         if (Number.isInteger(Number(count))) return Number(count);
 
         return new Error('Count Failed');
@@ -25,26 +23,23 @@ const count = async (prod_id: number): Promise<number | Error> => {
 
 export const getPacksByProd = async (page: number, limit: number, prodId: number): Promise<IResponse | Error> => {
     try {
-        const result = await Knex<IPack>(ETableNames.packs)
+
+        const packIds = await Knex(ETableNames.prod_packs)
+            .select('pack_id')
+            .where('prod_id', prodId).then(rows => rows.map(r => r.pack_id));
+
+        if (packIds.length === 0) {
+            return { totalCount: 0, packs: [] };
+        }
+        const result = await Knex(ETableNames.packs)
             .select(
-                `${ETableNames.packs}.id`,
-                `${ETableNames.packs}.description`,
-                `${ETableNames.packs}.prod_qnt`,
-                `${ETableNames.packs}.created_at`,
-                `${ETableNames.packs}.updated_at`,
-                Knex.raw(
-                    `(
-                    SELECT COUNT(*)
-                    FROM ${ETableNames.prod_packs}
-                    WHERE ${ETableNames.prod_packs}.pack_id = ${ETableNames.packs}.id
-                    ) AS products_count`
-                )
+                '*'
             )
-            .where('prod_id', prodId)
+            .whereIn('id', packIds)
             .orderBy(`${ETableNames.packs}.id`, 'desc')
             .offset((page - 1) * limit)
             .limit(limit);
-        const total = await count(prodId);
+        const total = await count(packIds);
         if (total instanceof Error) return total;
         return { totalCount: total, packs: result };
     } catch (e) {
