@@ -4,14 +4,14 @@ import { IPack } from '../../models';
 
 interface IResponse {
     totalCount: number,
-    packs: IPack[]
+    packs: (IPack & { name: string, identification: string })[]
 }
 
-const count = async (pack_ids: number[]): Promise<number | Error> => {
+const count = async (prodId: number): Promise<number | Error> => {
     try {
-        const [{ count }] = await Knex(ETableNames.packs)
-            .count<[{ count: number }]>('* as count')
-            .whereIn('id', pack_ids);
+        const [{ count }] = await Knex(ETableNames.prod_packs)
+            .where('prod_id', prodId)
+            .count<[{ count: number }]>('* as count');
         if (Number.isInteger(Number(count))) return Number(count);
 
         return new Error('Count Failed');
@@ -23,23 +23,22 @@ const count = async (pack_ids: number[]): Promise<number | Error> => {
 
 export const getPacksByProd = async (page: number, limit: number, prodId: number): Promise<IResponse | Error> => {
     try {
-
-        const packIds = await Knex(ETableNames.prod_packs)
-            .select('pack_id')
-            .where('prod_id', prodId).then(rows => rows.map(r => r.pack_id));
-
-        if (packIds.length === 0) {
-            return { totalCount: 0, packs: [] };
-        }
         const result = await Knex(ETableNames.packs)
             .select(
-                '*'
+                `${ETableNames.packs}.*`,
+                `${ETableNames.prod_packs}.name`,
+                `${ETableNames.prod_packs}.identification`
             )
-            .whereIn('id', packIds)
+            .join(
+                ETableNames.prod_packs,
+                `${ETableNames.prod_packs}.pack_id`,
+                `${ETableNames.packs}.id`
+            )
+            .where(`${ETableNames.prod_packs}.prod_id`, prodId)
             .orderBy(`${ETableNames.packs}.id`, 'desc')
             .offset((page - 1) * limit)
             .limit(limit);
-        const total = await count(packIds);
+        const total = await count(prodId);
         if (total instanceof Error) return total;
         return { totalCount: total, packs: result };
     } catch (e) {

@@ -1,19 +1,14 @@
 import { ETableNames } from '../../ETableNames';
 import { Knex } from '../../knex';
 
-export interface IRequestBody {
-    description: string;
-    prod_qnt: number;
-
-}
-
-export const create = async (request: IRequestBody): Promise<number | Error> => {
+export const create = async (prod_qnt: number): Promise<number | Error> => {
     try {
-        const existing = await Knex(ETableNames.packs).where({ prod_qnt: request.prod_qnt }).first();
+        const existing = await Knex(ETableNames.packs).where({ prod_qnt }).first();
         if (existing) {
             return new Error('Pack with this product quantity already exists');
         }
-        const [result] = await Knex(ETableNames.packs).insert({ description: request.description, prod_qnt: request.prod_qnt }).returning('id');
+        const description = `Embalagem com ${prod_qnt} itens`;
+        const [result] = await Knex(ETableNames.packs).insert({ description, prod_qnt }).returning('id');
         if (typeof result === 'object') {
             return result.id;
         } else if (typeof result === 'number') {
