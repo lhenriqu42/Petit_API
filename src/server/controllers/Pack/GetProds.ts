@@ -11,23 +11,23 @@ const DEFAULT_LIMIT = 7;
 interface IQueryProps {
     page?: number,
     limit?: number,
-    excludeProdId?: number
+    excludePackId?: number
 }
 
 const queryValidation: yup.Schema<IQueryProps> = yup.object().shape({
     page: yup.number().moreThan(0),
     limit: yup.number().moreThan(0),
-    excludeProdId: yup.number().moreThan(0),
+    excludePackId: yup.number().moreThan(0),
 });
 
-export const getPacksValidation = validation({
+export const getProdsValidation = validation({
     query: queryValidation,
 });
 
-export const getPacks: RequestHandler = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
+export const getProds: RequestHandler = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
 
-    const result = await PackProvider.getPacks(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, {
-        excludeProdId: req.query.excludeProdId
+    const result = await PackProvider.getProds(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, {
+        excludePackId: req.query.excludePackId
     });
 
     if (result instanceof Error) {
@@ -41,5 +41,5 @@ export const getPacks: RequestHandler = async (req: Request<{}, {}, {}, IQueryPr
     res.setHeader('access-control-expose-headers', 'x-total-count');
     res.setHeader('x-total-count', result.totalCount);
 
-    return res.status(StatusCodes.OK).json(result.packs);
+    return res.status(StatusCodes.OK).json(result.products);
 };

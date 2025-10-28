@@ -148,11 +148,13 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 
 
 // PACK
-router.post('/pack', ensureAuthenticated, PackController.createValidation, PackController.create);
-router.post('/pack/prod/:prodId', ensureAuthenticated, PackController.putPacksInProdValidation, PackController.putPacksInProd);
-router.post('/pack/pack/:packId', ensureAuthenticated, PackController.putProdsInPackValidation, PackController.putProdsInPack);
-router.get('/pack', ensureAuthenticated, PackController.getPacksValidation, PackController.getPacks);
-router.get('/pack/:prodId', ensureAuthenticated, PackController.getPacksByProdValidation, PackController.getPacksByProd);
-router.get('/pack/getProds/:packId', ensureAuthenticated, PackController.getProdsByPackValidation, PackController.getProdsByPack);
+router.post('/pack', ensureAdmin, PackController.createValidation, PackController.create);
+router.get('/pack', ensureAdmin, PackController.getPacksValidation, PackController.getPacks);
+router.get('/pack/products', ensureAdmin, PackController.getProdsValidation, PackController.getProds);
+router.get('/pack/:prodId', ensureAdmin, PackController.getPacksByProdValidation, PackController.getPacksByProd);
+router.get('/pack/getProds/:packId', ensureAdmin, PackController.getProdsByPackValidation, PackController.getProdsByPack);
+
+router.post('/pack/putPacks/:prodId', ensureAdmin, PackController.putPacksInProdValidation, PackController.putPacksInProd);
+router.post('/pack/putProds/:packId', ensureAdmin, PackController.putProdsInPackValidation, PackController.putProdsInPack);
 
 export { router };

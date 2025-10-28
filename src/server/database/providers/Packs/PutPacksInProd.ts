@@ -6,6 +6,12 @@ export interface IRequestBody {
     packs: number[];
 }
 
+interface PostgresError extends Error {
+    code?: string;
+    detail?: string;
+    constraint?: string;
+}
+
 export const putPacksInProd = async (request: IRequestBody): Promise<number | Error> => {
     try {
         if (request.packs.length === 0) {
@@ -30,8 +36,12 @@ export const putPacksInProd = async (request: IRequestBody): Promise<number | Er
 
         await Knex(ETableNames.prod_packs).insert(insertData);
         return request.prod_id;
-    } catch (e) {
-        console.log(e);
+    } catch (e: unknown) {
+        const err = e as PostgresError;
+        if (err.code === '23505') {
+            return new Error('One or more packs are already associated with this product');
+        }
+        console.error(e);
         return new Error('Register Failed');
     }
 };
