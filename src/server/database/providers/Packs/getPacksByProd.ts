@@ -4,7 +4,7 @@ import { IPack } from '../../models';
 
 interface IResponse {
     totalCount: number,
-    packs: (IPack & { name: string, identification: string })[]
+    packs: (IPack & { name: string, identifier: string })[]
 }
 
 const count = async (prodId: number): Promise<number | Error> => {
@@ -27,7 +27,7 @@ export const getPacksByProd = async (page: number, limit: number, prodId: number
             .select(
                 `${ETableNames.packs}.*`,
                 `${ETableNames.prod_packs}.name`,
-                `${ETableNames.prod_packs}.identification`
+                `${ETableNames.prod_packs}.identifier`
             )
             .join(
                 ETableNames.prod_packs,
