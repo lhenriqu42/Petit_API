@@ -9,6 +9,7 @@ interface IResponse {
 
 interface IFilter {
     excludePackId?: number;
+    name?: string;
 }
 
 
@@ -22,7 +23,9 @@ const count = async (filter?: IFilter): Promise<number> => {
                 .andWhere(`${ETableNames.prod_packs}.pack_id`, filter.excludePackId!);
         });
     }
-
+    if (filter?.name) {
+        query.where(ETableNames.products + '.name', 'ilike', `%${filter.name}%`);
+    }
     const result = await query;
 
     return Number(result[0]?.count ?? 0);
@@ -40,6 +43,9 @@ export const getProds = async (page: number, limit: number, filter?: IFilter): P
                     .whereRaw(`${ETableNames.prod_packs}.prod_id = ${ETableNames.products}.id`)
                     .andWhere(`${ETableNames.prod_packs}.pack_id`, filter.excludePackId!);
             });
+        }
+        if (filter?.name) {
+            query.where(ETableNames.products + '.name', 'ilike', `%${filter.name}%`);
         }
 
         const result = await query
