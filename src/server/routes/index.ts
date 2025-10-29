@@ -157,4 +157,7 @@ router.get('/pack/getProds/:packId', ensureAdmin, PackController.getProdsByPackV
 router.post('/pack/putPacks/:prodId', ensureAdmin, PackController.putPacksInProdValidation, PackController.putPacksInProd);
 router.post('/pack/putProds/:packId', ensureAdmin, PackController.putProdsInPackValidation, PackController.putProdsInPack);
 
+router.delete('/pack/putPacks/:prodId', ensureAdmin, PackController.removePacksByProdValidation, PackController.removePacksByProd);
+router.delete('/pack/putProds/:packId', ensureAdmin, PackController.removeProdsByPackValidation, PackController.removeProdsByPack);
+
 export { router };
