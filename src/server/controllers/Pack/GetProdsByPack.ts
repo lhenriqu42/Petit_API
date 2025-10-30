@@ -15,6 +15,7 @@ interface IParamProps {
 interface IQueryProps {
     page?: number,
     limit?: number,
+    prodName?: string,
 }
 
 const paramValidation: yup.Schema<IParamProps> = yup.object().shape({
@@ -24,6 +25,7 @@ const paramValidation: yup.Schema<IParamProps> = yup.object().shape({
 const queryValidation: yup.Schema<IQueryProps> = yup.object().shape({
     page: yup.number().moreThan(0),
     limit: yup.number().moreThan(0),
+    prodName: yup.string(),
 });
 
 export const getProdsByPackValidation = validation({
@@ -40,7 +42,7 @@ export const getProdsByPack: RequestHandler = async (req: Request<IParamProps, {
         });
     }
 
-    const result = await PackProvider.getProdsByPack(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.params.packId);
+    const result = await PackProvider.getProdsByPack(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.params.packId, req.query.prodName);
 
     if (result instanceof Error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
