@@ -8,7 +8,7 @@ export interface IPurchaseDetails {
     purchase_id: number,
     type: EPurchaseType,
     prod_id: number,
-    pack_id: number,
+    pack_id: number | null,
     quantity: number,
     price: number,
     pricetotal: number,

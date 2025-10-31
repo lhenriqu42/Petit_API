@@ -4,7 +4,7 @@ export * from './Stock';
 export * from './Fincash';
 export * from './Product';
 export * from './Payment';
-// export * from './Purchase';
+export * from './Purchase';
 export * from './Supplier';
 export * from './Validity';
 export * from './SaleDetail';

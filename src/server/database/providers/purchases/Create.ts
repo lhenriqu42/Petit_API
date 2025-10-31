@@ -1,46 +1,82 @@
-// import { ETableNames } from '../../ETableNames';
-// import { Knex } from '../../knex';
+import { ETableNames } from '../../ETableNames';
+import { Knex } from '../../knex';
+import { EPurchaseType } from '../../models/Purchase_details';
 
-// export interface IRequestBody {
-//     supplier_id: number;
-//     prods: { prod_id: number, quantity: number, price: number }[];
-// }
+export interface IRequestBody {
+    supplier_id: number,
+    purchases: {
+        type: EPurchaseType,
+        prod_id: number,
+        pack_id: number | null, // if type is PRODUCT, this must be null
+        quantity: number,
+        price: number,
+    }[];
+}
 
-// export const create = async (request: IRequestBody): Promise<number | Error> => {
-//     try {
-//         const productIds = request.prods.map(detail => Number(detail.prod_id));
-//         if (productIds.length === 0) return new Error('No products provided');
-        
-//         const productsExist = await Knex(ETableNames.products)
-//             .whereIn('id', productIds)
-//             .select('id')
-//             .catch(() => []);
+export const create = async (request: IRequestBody): Promise<number | Error> => {
+    try {
+        const supplierExists = await Knex(ETableNames.suppliers).where({ id: request.supplier_id }).first();
+        if (!supplierExists) {
+            return new Error('Supplier not found');
+        }
 
-//         if (productsExist.length !== productIds.length)
-//             return new Error('One or more products not found, check the product IDs');
 
-//         const purchase = await Knex(ETableNames.purchases).insert({ supplier_id: request.supplier_id }).returning('id');
-//         if (purchase) {
-//             const resultPromises = request.prods.map(async (element) => {
-//                 const [purchaseDetailId] = await Knex(ETableNames.purchase_details)
-//                     .insert({ ...element, purchase_id: purchase[0].id, pricetotal: (element.price * element.quantity) })
-//                     .returning('id');
+        let total_value = 0;
+        for (const item of request.purchases) {
+            const pricetotal = item.price * item.quantity;
+            total_value += pricetotal;
+        }
 
-//                 return purchaseDetailId;
-//             });
 
-//             const purchaseDetailIds = await Promise.all(resultPromises);
+        const combinations = request.purchases
+            .filter(p => p.pack_id != null)
+            .map(p => [p.pack_id!, p.prod_id]);
 
-//             const total_value = request.prods.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            
+        if (combinations.length > 0) {
+            const exists = await Knex(ETableNames.prod_packs)
+                .whereIn(['pack_id', 'prod_id'], combinations);
 
-//             await Knex(ETableNames.purchases).update({ total_value }).where('id', purchase[0].id);
+            if (exists.length !== combinations.length) {
+                return new Error('Invalid product-pack combination');
+            }
+        }
 
-//             return purchaseDetailIds.length;
-//         } else {
-//             return new Error('Purchase registration Failed');
-//         }
-//     } catch (e) {
-//         console.log(e);
-//         return new Error('Register Failed');
-//     }
-// };
+        const trx = await Knex.transaction();
+        const [purchase] = await trx(ETableNames.purchases).insert({
+            supplier_id: request.supplier_id,
+            total_value,
+            effected: false,
+        }).returning('id');
+
+        const purchaseDetailsToInsert = request.purchases.map(item => ({
+            purchase_id: purchase.id,
+            type: item.type,
+            prod_id: item.prod_id,
+            pack_id: item.pack_id,
+            quantity: item.quantity,
+            price: item.price,
+            pricetotal: item.price * item.quantity
+        }));
+
+        await trx(ETableNames.purchase_details).insert(purchaseDetailsToInsert);
+        await trx.commit();
+        return purchase.id;
+    } catch (e: unknown) {
+        const postError = e as PostgresError;
+        if (postError.code == '23503')
+        {
+            if (postError.detail?.includes('pack_id'))
+                return new Error('Pack ID not found');
+            if (postError.detail?.includes('prod_id'))
+                return new Error('Product ID not found');
+        }
+        console.log(e);
+        return new Error('Register Failed');
+    }
+};
+
+interface PostgresError extends Error {
+    code?: string;
+    detail?: string;
+}

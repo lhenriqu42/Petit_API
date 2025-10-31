@@ -7,7 +7,7 @@ import {
     PaymentController,
     SupplierController,
     ValidityController,
-    // PurchaseController,
+    PurchaseController,
     ProdGroupController,
     SaleDetailController,
     CashOutflowController,
@@ -142,8 +142,8 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 
 
 // PURCHASE
-// router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
-// router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
+router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
+router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
 
 
 
