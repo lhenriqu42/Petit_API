@@ -9,6 +9,7 @@ import { EPurchaseType } from '../../database/models';
 import AppError from '../../shared/Errors';
 
 interface IBodyProps extends IRequestBody { }
+interface IParamsProps { purchase_id?: number; }
 
 const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
     supplier_id: yup.number().positive().required().integer(),
@@ -26,16 +27,26 @@ const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
         })
     ).required()
 });
-
-export const createValidation = validation({
-    body: bodyValidation,
+const paramsValidation: yup.Schema<IParamsProps> = yup.object().shape({
+    purchase_id: yup.number().integer().positive().required(),
 });
 
-export const create: RequestHandler = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
+export const editPurchaseValidation = validation({
+    body: bodyValidation,
+    params: paramsValidation,
+});
+
+export const editPurchase: RequestHandler = async (req: Request<IParamsProps, {}, IBodyProps>, res: Response) => {
+    const { purchase_id } = req.params;
+    if (!purchase_id) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            errors: { id: 'ID is required' }
+        });
+    }
     try {
-        const result = await PurchaseProvider.create(req.body);
-        return res.status(StatusCodes.CREATED).json(result);
-    } catch (error) {
+        const result = await PurchaseProvider.editPurchase(purchase_id, req.body);
+        return res.status(StatusCodes.OK).json(result);
+    } catch (error: unknown) {
         const appError = error as AppError;
         return res.status(appError.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
