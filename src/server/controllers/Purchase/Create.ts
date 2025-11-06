@@ -21,7 +21,7 @@ const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
                 otherwise: () =>  yup.number().nullable().oneOf([null])
             }),
             quantity: yup.number().positive().required().integer(),
-            price: yup.number().positive().required()
+            price: yup.number().min(0).required()
         })
     ).required()
 });
