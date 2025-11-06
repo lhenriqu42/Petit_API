@@ -13,66 +13,76 @@ export interface IRequestBody {
     }[];
 }
 
-export const create = async (request: IRequestBody): Promise<number | Error> => {
+export const create = async (request: IRequestBody): Promise<number> => {
     try {
-        const supplierExists = await Knex(ETableNames.suppliers).where({ id: request.supplier_id }).first();
-        if (!supplierExists) {
-            return new Error('Supplier not found');
-        }
+        return await Knex.transaction(async (trx) => {
+            // Verifica se o fornecedor existe
+            const supplierExists = await trx(ETableNames.suppliers)
+                .where({ id: request.supplier_id })
+                .first();
 
-
-        let total_value = 0;
-        for (const item of request.purchases) {
-            const pricetotal = item.price * item.quantity;
-            total_value += pricetotal;
-        }
-
-
-        const combinations = request.purchases
-            .filter(p => p.pack_id != null)
-            .map(p => [p.pack_id!, p.prod_id]);
-
-            
-        if (combinations.length > 0) {
-            const exists = await Knex(ETableNames.prod_packs)
-                .whereIn(['pack_id', 'prod_id'], combinations);
-
-            if (exists.length !== combinations.length) {
-                return new Error('Invalid product-pack combination');
+            if (!supplierExists) {
+                throw new Error('Supplier not found');
             }
-        }
 
-        const trx = await Knex.transaction();
-        const [purchase] = await trx(ETableNames.purchases).insert({
-            supplier_id: request.supplier_id,
-            total_value,
-            effected: false,
-        }).returning('id');
+            // Calcula o total da compra
+            let total_value = 0;
+            for (const item of request.purchases) {
+                total_value += item.price * item.quantity;
+            }
 
-        const purchaseDetailsToInsert = request.purchases.map(item => ({
-            purchase_id: purchase.id,
-            type: item.type,
-            prod_id: item.prod_id,
-            pack_id: item.pack_id,
-            quantity: item.quantity,
-            price: item.price,
-            pricetotal: item.price * item.quantity
-        }));
+            // Valida combinações pack-produto
+            const combinations = request.purchases
+                .filter(p => p.pack_id != null)
+                .map(p => [p.pack_id!, p.prod_id]);
 
-        await trx(ETableNames.purchase_details).insert(purchaseDetailsToInsert);
-        await trx.commit();
-        return purchase.id;
+            if (combinations.length > 0) {
+                const exists = await trx(ETableNames.prod_packs)
+                    .whereIn(['pack_id', 'prod_id'], combinations);
+
+                if (exists.length !== combinations.length) {
+                    throw new Error('Invalid product-pack combination');
+                }
+            }
+
+            // Prepara detalhes da compra
+            const purchaseDetailsToInsert = request.purchases.map(item => ({
+                purchase_id: purchase.id,
+                type: item.type,
+                prod_id: item.prod_id,
+                pack_id: item.pack_id,
+                quantity: item.quantity,
+                price: item.price,
+                pricetotal: item.price * item.quantity,
+            }));
+
+            // Cria a compra principal
+            const [purchase] = await trx(ETableNames.purchases)
+                .insert({
+                    supplier_id: request.supplier_id,
+                    total_value,
+                    effected: false,
+                })
+                .returning('id');
+
+            // Insere detalhes
+            await trx(ETableNames.purchase_details).insert(purchaseDetailsToInsert);
+
+            return purchase.id;
+        });
+
     } catch (e: unknown) {
         const postError = e as PostgresError;
-        if (postError.code == '23503')
-        {
+
+        if (postError.code === '23503') {
             if (postError.detail?.includes('pack_id'))
-                return new Error('Pack ID not found');
+                throw new Error('Pack ID not found');
             if (postError.detail?.includes('prod_id'))
-                return new Error('Product ID not found');
+                throw new Error('Product ID not found');
         }
-        console.log(e);
-        return new Error('Register Failed');
+
+        console.error(e);
+        throw new Error('Register Failed');
     }
 };
 

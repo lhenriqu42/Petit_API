@@ -18,7 +18,7 @@ const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
             pack_id: yup.number().nullable().default(null).when('type', {
                 is: EPurchaseType.PACK,
                 then: () => yup.number().positive().required().integer(),
-                otherwise: () =>  yup.number().nullable().oneOf([null])
+                otherwise: () => yup.number().nullable().oneOf([null])
             }),
             quantity: yup.number().positive().required().integer(),
             price: yup.number().min(0).required()
@@ -31,13 +31,16 @@ export const createValidation = validation({
 });
 
 export const create: RequestHandler = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
-    const result = await PurchaseProvider.create(req.body);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            errors: {
-                default: result.message
-            }
-        });
+    try {
+        const result = await PurchaseProvider.create(req.body);
+        return res.status(StatusCodes.CREATED).json(result);
+    } catch (error) {
+        if (error instanceof Error) {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                errors: {
+                    default: error.message
+                }
+            });
+        }
     }
-    return res.status(StatusCodes.CREATED).json(result);
 };
