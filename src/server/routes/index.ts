@@ -11,7 +11,7 @@ import {
     ProdGroupController,
     SaleDetailController,
     CashOutflowController,
-} from './../controllers';
+} from './../../Modules/Controllers';
 import { Router } from 'express';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
 

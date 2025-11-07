@@ -16,7 +16,7 @@ import {
     ISaleDetails,
     IProduct_group,
     IPurchaseDetails
-} from '../../models';
+} from '../../../server/database/models';
 
 declare module 'knex/types/tables' {
     interface Tables {
