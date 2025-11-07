@@ -145,6 +145,7 @@ router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidatio
 router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
 router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
 router.put('/purchase/:purchase_id', ensureAdmin, PurchaseController.editPurchaseValidation, PurchaseController.editPurchase);
+router.get('/purchase/:purchase_id', ensureAdmin, PurchaseController.getPurchaseDetailsValidation, PurchaseController.getPurchaseDetails);
 router.put('/purchase/complete/:purchase_id', ensureAdmin, PurchaseController.completePurchaseValidation, PurchaseController.completePurchase);
 
 
