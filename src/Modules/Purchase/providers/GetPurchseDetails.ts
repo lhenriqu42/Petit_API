@@ -1,6 +1,7 @@
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
-import { IPurchaseDetails, IPurchases } from '../../../server/database/models';
+import { EPurchaseType, IPurchases } from '../../../server/database/models';
+
 
 interface IResponse {
     purchase: {
@@ -15,11 +16,21 @@ interface IResponse {
         updated_at: Date;
         items_summary: {
             count: number;
-            items: (IPurchaseDetails & {
-                name: string;
+            items: {
+                id: number;
+                type: EPurchaseType;
+                quantity: number;
                 price: number;
+                pricetotal: number;
+
+                prod_id: number;
+                prod_name: string;
+                prod_price: number;
+
+                pack_id: number | null;
                 pack_quantity?: number | null;
-            })[];
+
+            }[];
         };
     };
 }
@@ -48,9 +59,11 @@ export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse
                 'pd.type',
                 'pd.prod_id',
                 'pd.pack_id',
-                'pd.quantity',
                 'pd.price',
-                'p.name as name',
+                'pd.quantity',
+                'pd.pricetotal',
+                'pr.name as prod_name',
+                'pr.price as prod_price',
                 Knex.raw(`
                     CASE 
                         WHEN pd.pack_id IS NOT NULL THEN pk.prod_qnt 
@@ -58,7 +71,7 @@ export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse
                     END as pack_quantity
                 `)
             )
-            .leftJoin(`${ETableNames.products} as p`, 'p.id', 'pd.prod_id')
+            .leftJoin(`${ETableNames.products} as pr`, 'pr.id', 'pd.prod_id')
             .leftJoin(`${ETableNames.packs} as pk`, 'pk.id', 'pd.pack_id')
             .where('pd.purchase_id', purchase_id)
             .orderBy('pd.id', 'asc');
@@ -72,17 +85,25 @@ export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse
                     id: purchase.supplier_id,
                     name: purchase.supplier_name,
                 },
-                total_value: purchase.total_value,
+                total_value: Number(purchase.total_value),
                 effected: purchase.effected,
                 created_at: purchase.created_at,
                 updated_at: purchase.updated_at,
                 items_summary: {
                     count: total_count,
                     items: items.map(i => ({
-                        ...i,
+                        id: i.id,
+                        type: i.type,
+                        quantity: i.quantity,
                         price: Number(i.price),
-                        quantity: Number(i.quantity),
-                        pack_quantity: i.pack_quantity ? Number(i.pack_quantity) : null,
+                        pricetotal: Number(i.pricetotal),
+
+                        prod_id: i.prod_id,
+                        prod_name: i.prod_name,
+                        prod_price: Number(i.prod_price),
+
+                        pack_id: i.pack_id,
+                        pack_quantity: i.pack_quantity,
                     })),
                 },
             },
