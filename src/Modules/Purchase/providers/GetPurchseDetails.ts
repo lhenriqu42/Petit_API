@@ -5,60 +5,85 @@ import { IPurchaseDetails, IPurchases } from '../../../server/database/models';
 interface IResponse {
     purchase: {
         id: number;
-        supplier_id: number;
+        supplier: {
+            id: number;
+            name: string;
+        };
         total_value: number;
         effected: boolean;
         created_at: Date;
         updated_at: Date;
-        details: {
-            total_count: number;
-            prod_list: (IPurchaseDetails & { prod_name: string })[];
+        items_summary: {
+            count: number;
+            items: (IPurchaseDetails & {
+                name: string;
+                price: number;
+                pack_quantity?: number | null;
+            })[];
         };
     };
 }
 
 export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse | Error> => {
     try {
-        // Busca a compra principal
-        const purchase = await Knex<IPurchases>(ETableNames.purchases)
+        const purchase = await Knex<IPurchases>(`${ETableNames.purchases} as pur`)
             .select(
-                'id',
-                'supplier_id',
-                'total_value',
-                'effected',
-                'created_at',
-                'updated_at'
+                'pur.id',
+                'pur.supplier_id',
+                'pur.total_value',
+                'pur.effected',
+                'pur.created_at',
+                'pur.updated_at',
+                'sup.name as supplier_name',
             )
-            .where('id', purchase_id)
+            .join(`${ETableNames.suppliers} as sup`, 'sup.id', 'pur.supplier_id')
+            .where('pur.id', purchase_id)
             .first();
 
         if (!purchase) return new Error('Purchase not found');
 
-        // Consulta de detalhes com total_count em uma única query
-        const detailsQuery = Knex(ETableNames.purchase_details)
+        const items = await Knex(`${ETableNames.purchase_details} as pd`)
             .select(
-                `${ETableNames.purchase_details}.*`,
-                `${ETableNames.products}.name as prod_name`
+                'pd.id',
+                'pd.type',
+                'pd.prod_id',
+                'pd.pack_id',
+                'pd.quantity',
+                'pd.price',
+                'p.name as name',
+                Knex.raw(`
+                    CASE 
+                        WHEN pd.pack_id IS NOT NULL THEN pk.prod_qnt 
+                        ELSE NULL
+                    END as pack_quantity
+                `)
             )
-            .leftJoin(ETableNames.products, `${ETableNames.products}.id`, `${ETableNames.purchase_details}.prod_id`)
-            .where('purchase_id', purchase_id)
-            .orderBy('id', 'asc');
+            .leftJoin(`${ETableNames.products} as p`, 'p.id', 'pd.prod_id')
+            .leftJoin(`${ETableNames.packs} as pk`, 'pk.id', 'pd.pack_id')
+            .where('pd.purchase_id', purchase_id)
+            .orderBy('pd.id', 'asc');
 
-        const countQuery = Knex(ETableNames.purchase_details)
-            .where('purchase_id', purchase_id)
-            .count<{ count: number }[]>('* as count')
-            .first();
-
-        const [prod_list, total] = await Promise.all([detailsQuery, countQuery]);
-
-        const total_count = Number(total?.count || 0);
+        const total_count = items.length;
 
         return {
             purchase: {
-                ...purchase,
-                details: {
-                    total_count,
-                    prod_list,
+                id: purchase.id,
+                supplier: {
+                    id: purchase.supplier_id,
+                    name: purchase.supplier_name,
+                },
+                total_value: purchase.total_value,
+                effected: purchase.effected,
+                created_at: purchase.created_at,
+                updated_at: purchase.updated_at,
+                items_summary: {
+                    count: total_count,
+                    items: items.map(i => ({
+                        ...i,
+                        price: Number(i.price),
+                        quantity: Number(i.quantity),
+                        pack_quantity: i.pack_quantity ? Number(i.pack_quantity) : null,
+                    })),
                 },
             },
         };

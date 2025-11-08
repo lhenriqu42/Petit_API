@@ -34,8 +34,5 @@ export const getPurchaseDetails: RequestHandler = async (req: Request<IParamsPro
         });
     }
 
-    res.setHeader('access-control-expose-headers', 'x-total-count');
-    res.setHeader('x-total-count', result.purchase.details.total_count);
-
     return res.status(StatusCodes.OK).json(result.purchase);
 };
