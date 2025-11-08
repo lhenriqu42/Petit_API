@@ -12,12 +12,12 @@ interface IResponse {
         updated_at: Date;
         details: {
             total_count: number;
-            prod_list: IPurchaseDetails[];
+            prod_list: (IPurchaseDetails & { prod_name: string })[];
         };
     };
 }
 
-export const getPurchaseDetails = async (purchase_id: number, page: number, limit: number): Promise<IResponse | Error> => {
+export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse | Error> => {
     try {
         // Busca a compra principal
         const purchase = await Knex<IPurchases>(ETableNames.purchases)
@@ -36,11 +36,13 @@ export const getPurchaseDetails = async (purchase_id: number, page: number, limi
 
         // Consulta de detalhes com total_count em uma única query
         const detailsQuery = Knex(ETableNames.purchase_details)
-            .select('*')
+            .select(
+                `${ETableNames.purchase_details}.*`,
+                `${ETableNames.products}.name as prod_name`
+            )
+            .leftJoin(ETableNames.products, `${ETableNames.products}.id`, `${ETableNames.purchase_details}.prod_id`)
             .where('purchase_id', purchase_id)
-            .orderBy('id', 'asc')
-            .offset((page - 1) * limit)
-            .limit(limit);
+            .orderBy('id', 'asc');
 
         const countQuery = Knex(ETableNames.purchase_details)
             .where('purchase_id', purchase_id)
