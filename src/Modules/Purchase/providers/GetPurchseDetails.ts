@@ -30,6 +30,8 @@ interface IResponse {
                 pack_id: number | null;
                 pack_quantity?: number | null;
 
+                pack_deleted_qnt?: number | null; // Will be present if type is 'PACK' and the pack has been deleted
+
             }[];
         };
     };
@@ -62,6 +64,7 @@ export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse
                 'pd.price',
                 'pd.quantity',
                 'pd.pricetotal',
+                'pd.pack_deleted_qnt',
                 'pr.name as prod_name',
                 'pr.price as prod_price',
                 Knex.raw(`
@@ -104,6 +107,8 @@ export const getPurchaseDetails = async (purchase_id: number): Promise<IResponse
 
                         pack_id: i.pack_id,
                         pack_quantity: i.pack_quantity,
+
+                        pack_deleted_qnt: i.pack_deleted_qnt,
                     })),
                 },
             },
