@@ -28,6 +28,7 @@ export const getProdsByPack = async (page: number, limit: number, packId: number
         }
         const prods = await Knex<IProduct>(ETableNames.products)
             .select('*')
+            .whereNull('deleted_at')
             .whereIn('id', productIds)
             .andWhere('name', 'ilike', `%${prodName}%`)
             .orderBy('id', 'desc')

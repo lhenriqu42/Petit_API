@@ -14,7 +14,7 @@ interface IFilter {
 
 
 const count = async (filter?: IFilter): Promise<number> => {
-    const query = Knex(ETableNames.products).count<[{ count: number }]>('* as count');
+    const query = Knex(ETableNames.products).count<[{ count: number }]>('* as count').whereNull('deleted_at');
     if (filter?.excludePackId) {
         query.whereNotExists(function () {
             this.select('*')
@@ -34,7 +34,8 @@ const count = async (filter?: IFilter): Promise<number> => {
 export const getProds = async (page: number, limit: number, filter?: IFilter): Promise<IResponse | Error> => {
     try {
         const query = Knex(ETableNames.products)
-            .select('*');
+            .select('*')
+            .whereNull('deleted_at');
 
         if (filter?.excludePackId) {
             query.whereNotExists(function () {

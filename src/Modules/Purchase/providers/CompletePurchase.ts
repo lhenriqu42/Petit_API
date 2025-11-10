@@ -20,6 +20,7 @@ export const completePurchase = async (purchase_id: number): Promise<void> => {
                     'type',
                     'pack_id',
                     'prod_id',
+                    'pack_deleted_qnt',
                     'quantity'
                 )
                 .where({ purchase_id });
@@ -45,7 +46,7 @@ export const completePurchase = async (purchase_id: number): Promise<void> => {
             const stockAdjustments = new Map<number, number>();
 
             for (const item of details) {
-                const packSize = item.type === 'PACK' ? (packSizes.get(item.pack_id!) ?? 1) : 1;
+                const packSize = item.type === 'PACK' ? (item.pack_deleted_qnt ?? packSizes.get(item.pack_id!) ?? 1) : 1;
                 const totalQty = item.quantity * packSize;
 
                 const current = stockAdjustments.get(item.prod_id) ?? 0;

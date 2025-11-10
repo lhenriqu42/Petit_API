@@ -1,7 +1,7 @@
 import * as create from './Create';
 import * as getPacks from './GetPacks';
 import * as getProds from './getProds';
-import * as deleteById from './DeleteById';
+import * as deleteById from './deleteById';
 import * as getPacksByProd from './getPacksByProd';
 import * as getProdsByPack from './getProdsByPack';
 import * as putProdsInPack from './PutProdsInPack';
