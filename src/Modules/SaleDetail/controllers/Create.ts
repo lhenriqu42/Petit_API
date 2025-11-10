@@ -4,6 +4,7 @@ import { validation } from '../../../server/shared/middleware';
 import { ISaleDetails } from '../../../server/database/models';
 import { SaleDetailProvider } from '../providers';
 import { StatusCodes } from 'http-status-codes';
+import AppError from '../../../server/shared/Errors';
 
 interface IBodyProps {
     data: Omit<ISaleDetails, 'id' | 'created_at' | 'updated_at' | 'pricetotal' | 'sale_id'>[];
@@ -25,13 +26,15 @@ export const createValidation = validation({
 });
 
 export const create: RequestHandler = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
-    const result = await SaleDetailProvider.create(req.body.data, req.body.obs);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    try {
+        const result = await SaleDetailProvider.create(req.body.data, req.body.obs);
+        return res.status(StatusCodes.CREATED).json(result);
+    } catch (error) {
+        const appError = error as AppError;
+        return res.status(appError.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
-                default: result.message
+                default: appError.message
             }
         });
     }
-    return res.status(StatusCodes.CREATED).json(result);
 };
