@@ -1,48 +1,55 @@
+import { Knex as def_knex } from 'knex';
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
-import { IFincash } from '../../../server/database/models';
+import AppError, { ConflictError, NotFoundError } from '../../../server/shared/Errors';
 
-type TFincashParam = Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'opener' | 'value' | 'finalDate' | 'isFinished'>;
-
-export const finish = async (id: number, fincash: TFincashParam): Promise<void | Error> => {
+export const finish = async (id: number, finalValue: number): Promise<void> => {
     try {
-        const [{ count }] = await Knex(ETableNames.fincashs).where('id', id).count<[{ count: number }]>('* as count');
-        if (count === 0) return Error('Fincash not found');
+        await Knex.transaction(async trx => {
+            //🔹 1. Busca o caixa
+            const fincash = await trx(ETableNames.fincashs).select('id', 'isFinished').where('id', id).first();
+            if (!fincash) throw new NotFoundError('Fincash not found');
+            if (fincash.isFinished) throw new ConflictError('Fincash already finished');
 
-        const finished = await Knex(ETableNames.fincashs).select('*').where('id', id).andWhere('isFinished', true).first();
-        if (!finished) {
+            //🔹 2. Calcula o total das vendas
+            const totalValue = await getTotalValue(trx, id);
 
-            const totalValue = await getTotalValue(id);
-            const result = await Knex(ETableNames.fincashs)
-                .update({
-                    ...fincash,
-                    finalDate: Knex.fn.now(),
-                    isFinished: true,
-                    totalValue
-                })
-                .where('id', id);
+            //🔹 3. Verifica se é retroativo
+            const lastFincash = await trx(ETableNames.fincashs).select('id').orderBy('created_at', 'desc').first();
+            const retroactive = lastFincash && lastFincash.id !== id;
 
-            if (result > 0) {
-                return;
-            } else {
-                return new Error('Finish Failed: INTERNAL ERROR');
+            //🔹 4. Atualiza
+            const updateData: Record<string, unknown> = {
+                finalValue,
+                isFinished: true,
+                totalValue,
+            };
+
+            if (!retroactive) {
+                updateData.finalDate = trx.fn.now();
             }
-        } else {
-            return new Error('FinCash already Finished');
-        }
 
+            await trx(ETableNames.fincashs)
+                .update(updateData)
+                .where('id', id);
+        });
     } catch (e) {
-        console.log(e);
-        return new Error('Finish Failed');
+        console.error(e);
+        if (e instanceof AppError) throw e;
+        throw new AppError('Finish Failed');
     }
 };
 
-
-const getTotalValue = async (fincash_id: number) => {
-    const response: { sum: number }[] = await Knex(ETableNames.sales)
-        .join(ETableNames.saleDetails, `${ETableNames.sales}.id`, `${ETableNames.saleDetails}.sale_id`)
+const getTotalValue = async (trx: def_knex.Transaction, fincash_id: number): Promise<number> => {
+    const response = await trx(ETableNames.sales)
+        .join(
+            ETableNames.saleDetails,
+            `${ETableNames.sales}.id`,
+            `${ETableNames.saleDetails}.sale_id`
+        )
         .where(`${ETableNames.sales}.fincash_id`, fincash_id)
         .andWhere(`${ETableNames.sales}.deleted_at`, null)
-        .sum(`${ETableNames.saleDetails}.pricetotal`);
-    return response[0].sum;
+        .sum<{ sum: number }[]>(`${ETableNames.saleDetails}.pricetotal as sum`);
+
+    return Number(response[0]?.sum) || 0;
 };

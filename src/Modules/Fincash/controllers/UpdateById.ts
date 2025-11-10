@@ -4,6 +4,7 @@ import * as yup from 'yup';
 
 import { FincashProvider } from '../providers';
 import { validation } from '../../../server/shared/middleware';
+import AppError from '../../../server/shared/Errors';
 
 interface IParamProps {
     id?: number,
@@ -42,14 +43,15 @@ export const updateById = async (req: Request<IParamProps, {}, IBodyProps>, res:
             }
         });
     }
-    const result = await FincashProvider.updateById(req.params.id, req.body);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    try {
+        await FincashProvider.updateById(req.params.id, req.body);
+        return res.status(StatusCodes.NO_CONTENT).send();
+    } catch (error) {
+        const appError = error as AppError;
+        return res.status(appError.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
-                default: result.message
+                default: appError.message
             }
         });
     }
-
-    return res.status(StatusCodes.NO_CONTENT).json(result);
 };

@@ -56,6 +56,7 @@ router.delete('/fincash/:id', ensureAuthenticated, ensureAdmin, FincashControlle
 router.post('/fincash/addcard/:id', ensureAuthenticated, ensureAdmin, FincashController.calcBreakValidation, FincashController.calcBreak);
 router.post('/fincash/data/:id', ensureAuthenticated, ensureAdmin, FincashController.getDataByIdValidation, FincashController.getDataById);
 router.get('/total-value/fincash/:id', ensureAuthenticated, FincashController.getTotalByFincashValidation, FincashController.getTotalByFincash);
+router.put('/fincash/reopen/:fincash_id', ensureAuthenticated, ensureAdmin, FincashController.reOpenFincashValidation, FincashController.reOpenFincash);
 
 
 

@@ -4,13 +4,15 @@ import * as yup from 'yup';
 
 import { FincashProvider } from '../providers';
 import { validation } from '../../../server/shared/middleware';
-import { IFincash } from '../../../server/database/models';
+import AppError from '../../../server/shared/Errors';
 
 interface IParamProps {
     id?: number,
 }
 
-interface IBodyProps extends Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'opener' | 'value' | 'finalDate' | 'isFinished'> { }
+interface IBodyProps {
+    finalValue: number,
+}
 
 const paramsValidation: yup.Schema<IParamProps> = yup.object().shape({
     id: yup.number().integer().required().moreThan(0),
@@ -33,14 +35,16 @@ export const finish = async (req: Request<IParamProps, {}, IBodyProps>, res: Res
             }
         });
     }
-    const result = await FincashProvider.finish(req.params.id, req.body);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+
+    try {
+        await FincashProvider.finish(req.params.id, req.body.finalValue);
+        return res.status(StatusCodes.OK).send();
+    } catch (e) {
+        const AppError = e as AppError;
+        return res.status(AppError.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
-                default: result.message
+                default: AppError.message
             }
         });
     }
-
-    return res.status(StatusCodes.NO_CONTENT).json(result);
 };

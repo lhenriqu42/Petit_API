@@ -1,3 +1,4 @@
+import { Knex as def_knex } from 'knex';
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
 import { IFincash } from '../../../server/database/models';
@@ -43,11 +44,11 @@ export const calcBreak = async (cardValue: number, fincash_id: number): Promise<
 };
 
 
-export const getBreak = async (fincash: IFincash, cardValue: number): Promise<{ realBreak: number, invoicing: number } | Error> => {
+export const getBreak = async (fincash: IFincash, cardValue: number, trx?: def_knex.Transaction): Promise<{ realBreak: number, invoicing: number } | Error> => {
     if ((fincash.finalValue || fincash.finalValue == null) && (fincash.totalValue || fincash.totalValue == null)) {
         if (fincash.finalValue == null) fincash.finalValue = 0;
         if (fincash.totalValue == null) fincash.totalValue = 0;
-        const total = await CashOutflowProvider.getTotalById(fincash.id);
+        const total = await CashOutflowProvider.getTotalById(fincash.id, trx);
         if (!(total instanceof Error)) {
             const TotalCash = Number((fincash.finalValue - fincash.value)) + Number(total);
             const invoicing = TotalCash + Number(cardValue);
