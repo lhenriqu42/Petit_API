@@ -1,6 +1,7 @@
 import * as create from './Create';
 import * as getPacks from './GetPacks';
 import * as getProds from './getProds';
+import * as deleteById from './DeleteById';
 import * as getPacksByProd from './getPacksByProd';
 import * as getProdsByPack from './getProdsByPack';
 import * as putProdsInPack from './PutProdsInPack';
@@ -12,6 +13,7 @@ export const PackProvider = {
     ...create,
     ...getPacks,
     ...getProds,
+    ...deleteById,
     ...getPacksByProd,
     ...getProdsByPack,
     ...putProdsInPack,

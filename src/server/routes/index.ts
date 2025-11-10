@@ -49,8 +49,8 @@ router.get('/fincash', ensureAuthenticated, FincashController.getAllValidation, 
 router.post('/fincash', ensureAuthenticated, FincashController.createValidation, FincashController.create);
 router.get('/fincash/:id', ensureAuthenticated, FincashController.getByIdValidation, FincashController.getById);
 router.put('/fincash/finish/:id', ensureAuthenticated, FincashController.finishValidation, FincashController.finish);
-router.put('/fincash/:id',ensureAuthenticated, ensureAdmin, FincashController.updateByIdValidation, FincashController.updateById);
 router.get('/data', ensureAuthenticated, ensureAdmin, FincashController.getDataByDateValidation, FincashController.getDataByDate); //DASHBOARD GRAPH
+router.put('/fincash/:id', ensureAuthenticated, ensureAdmin, FincashController.updateByIdValidation, FincashController.updateById);
 router.put('/fincash/obs/:id', ensureAuthenticated, ensureAdmin, FincashController.updateObsValidation, FincashController.updateObs);
 router.delete('/fincash/:id', ensureAuthenticated, ensureAdmin, FincashController.deleteByIdValidation, FincashController.deleteById);
 router.post('/fincash/addcard/:id', ensureAuthenticated, ensureAdmin, FincashController.calcBreakValidation, FincashController.calcBreak);
@@ -135,8 +135,8 @@ router.get('/payment/total', ensureAdmin, PaymentController.getTotalByDateValida
 router.post('/payment/get', ensureAdmin, PaymentController.getAllValidation, PaymentController.getAll);
 router.get('/payment/:id', ensureAdmin, PaymentController.getByIdValidation, PaymentController.getById);
 router.post('/payment', ensureAdmin, PaymentController.createValidation, PaymentController.create);
-router.put('/payment/paid/:id', ensureAdmin,  PaymentController.markWithPaidValidation, PaymentController.markWithPaid);
-router.put('/payment/back/:id', ensureAdmin,  PaymentController.markWithPaidValidation, PaymentController.unmarkWithPaid);
+router.put('/payment/paid/:id', ensureAdmin, PaymentController.markWithPaidValidation, PaymentController.markWithPaid);
+router.put('/payment/back/:id', ensureAdmin, PaymentController.markWithPaidValidation, PaymentController.unmarkWithPaid);
 router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidation, PaymentController.deleteById);
 
 
@@ -153,8 +153,10 @@ router.put('/purchase/complete/:purchase_id', ensureAdmin, PurchaseController.co
 router.post('/pack', ensureAdmin, PackController.createValidation, PackController.create);
 router.get('/pack', ensureAdmin, PackController.getPacksValidation, PackController.getPacks);
 router.get('/pack/products', ensureAdmin, PackController.getProdsValidation, PackController.getProds);
+router.delete('/pack/:id', ensureAdmin, PackController.deleteByIdValidation, PackController.deleteById);
 router.get('/pack/:prodId', ensureAdmin, PackController.getPacksByProdValidation, PackController.getPacksByProd);
 router.get('/pack/getProds/:packId', ensureAdmin, PackController.getProdsByPackValidation, PackController.getProdsByPack);
+
 
 router.post('/pack/putPacks/:prodId', ensureAdmin, PackController.putPacksInProdValidation, PackController.putPacksInProd);
 router.post('/pack/putProds/:packId', ensureAdmin, PackController.putProdsInPackValidation, PackController.putProdsInPack);
