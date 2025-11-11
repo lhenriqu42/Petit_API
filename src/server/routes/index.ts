@@ -1,16 +1,18 @@
 import {
     UserController,
+    PackController,
+    StockController,
     ProductController,
     FincashController,
     PaymentController,
     SupplierController,
     ValidityController,
+    PurchaseController,
+    ProdGroupController,
     SaleDetailController,
     CashOutflowController,
-} from './../controllers';
+} from './../../Modules/Controllers';
 import { Router } from 'express';
-import { StockController } from '../controllers/Stock';
-import { ProdGroupController } from '../controllers/ProductGroup';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
 
 const router = Router();
@@ -47,13 +49,14 @@ router.get('/fincash', ensureAuthenticated, FincashController.getAllValidation, 
 router.post('/fincash', ensureAuthenticated, FincashController.createValidation, FincashController.create);
 router.get('/fincash/:id', ensureAuthenticated, FincashController.getByIdValidation, FincashController.getById);
 router.put('/fincash/finish/:id', ensureAuthenticated, FincashController.finishValidation, FincashController.finish);
-router.put('/fincash/:id',ensureAuthenticated, ensureAdmin, FincashController.updateByIdValidation, FincashController.updateById);
 router.get('/data', ensureAuthenticated, ensureAdmin, FincashController.getDataByDateValidation, FincashController.getDataByDate); //DASHBOARD GRAPH
+router.put('/fincash/:id', ensureAuthenticated, ensureAdmin, FincashController.updateByIdValidation, FincashController.updateById);
 router.put('/fincash/obs/:id', ensureAuthenticated, ensureAdmin, FincashController.updateObsValidation, FincashController.updateObs);
 router.delete('/fincash/:id', ensureAuthenticated, ensureAdmin, FincashController.deleteByIdValidation, FincashController.deleteById);
 router.post('/fincash/addcard/:id', ensureAuthenticated, ensureAdmin, FincashController.calcBreakValidation, FincashController.calcBreak);
 router.post('/fincash/data/:id', ensureAuthenticated, ensureAdmin, FincashController.getDataByIdValidation, FincashController.getDataById);
 router.get('/total-value/fincash/:id', ensureAuthenticated, FincashController.getTotalByFincashValidation, FincashController.getTotalByFincash);
+router.put('/fincash/reopen/:fincash_id', ensureAuthenticated, ensureAdmin, FincashController.reOpenFincashValidation, FincashController.reOpenFincash);
 
 
 
@@ -133,11 +136,33 @@ router.get('/payment/total', ensureAdmin, PaymentController.getTotalByDateValida
 router.post('/payment/get', ensureAdmin, PaymentController.getAllValidation, PaymentController.getAll);
 router.get('/payment/:id', ensureAdmin, PaymentController.getByIdValidation, PaymentController.getById);
 router.post('/payment', ensureAdmin, PaymentController.createValidation, PaymentController.create);
-router.put('/payment/paid/:id', ensureAdmin,  PaymentController.markWithPaidValidation, PaymentController.markWithPaid);
-router.put('/payment/back/:id', ensureAdmin,  PaymentController.markWithPaidValidation, PaymentController.unmarkWithPaid);
+router.put('/payment/paid/:id', ensureAdmin, PaymentController.markWithPaidValidation, PaymentController.markWithPaid);
+router.put('/payment/back/:id', ensureAdmin, PaymentController.markWithPaidValidation, PaymentController.unmarkWithPaid);
 router.delete('/payment/:id', ensureAdmin, PaymentController.deleteByIdValidation, PaymentController.deleteById);
 
 
 
+// PURCHASE
+router.post('/purchase', ensureAdmin, PurchaseController.createValidation, PurchaseController.create);
+router.get('/purchase', ensureAdmin, PurchaseController.getPurchasesValidation, PurchaseController.getPurchases);
+router.delete('/purchase/:id', ensureAdmin, PurchaseController.deleteByIdValidation, PurchaseController.deleteById);
+router.put('/purchase/:purchase_id', ensureAdmin, PurchaseController.editPurchaseValidation, PurchaseController.editPurchase);
+router.get('/purchase/:purchase_id', ensureAdmin, PurchaseController.getPurchaseDetailsValidation, PurchaseController.getPurchaseDetails);
+router.put('/purchase/complete/:purchase_id', ensureAdmin, PurchaseController.completePurchaseValidation, PurchaseController.completePurchase);
+
+// PACK
+router.post('/pack', ensureAdmin, PackController.createValidation, PackController.create);
+router.get('/pack', ensureAdmin, PackController.getPacksValidation, PackController.getPacks);
+router.get('/pack/products', ensureAdmin, PackController.getProdsValidation, PackController.getProds);
+router.delete('/pack/:id', ensureAdmin, PackController.deleteByIdValidation, PackController.deleteById);
+router.get('/pack/:prodId', ensureAdmin, PackController.getPacksByProdValidation, PackController.getPacksByProd);
+router.get('/pack/getProds/:packId', ensureAdmin, PackController.getProdsByPackValidation, PackController.getProdsByPack);
+
+
+router.post('/pack/putPacks/:prodId', ensureAdmin, PackController.putPacksInProdValidation, PackController.putPacksInProd);
+router.post('/pack/putProds/:packId', ensureAdmin, PackController.putProdsInPackValidation, PackController.putProdsInPack);
+
+router.delete('/pack/removePacks/:prodId', ensureAdmin, PackController.removePacksByProdValidation, PackController.removePacksByProd);
+router.delete('/pack/removeProds/:packId', ensureAdmin, PackController.removeProdsByPackValidation, PackController.removeProdsByPack);
 
 export { router };
