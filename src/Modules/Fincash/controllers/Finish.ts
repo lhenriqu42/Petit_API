@@ -37,7 +37,7 @@ export const finish = async (req: Request<IParamProps, {}, IBodyProps>, res: Res
     }
 
     try {
-        await FincashProvider.finish(req.params.id, req.body.finalValue);
+        await FincashProvider.finish(Number(req.params.id), req.body.finalValue);
         return res.status(StatusCodes.OK).send();
     } catch (e) {
         const AppError = e as AppError;
