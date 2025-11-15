@@ -2,6 +2,7 @@ import { Knex as def_knex } from 'knex';
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
 import AppError, { ConflictError, NotFoundError } from '../../../server/shared/Errors';
+import { getNextFincash } from './UpdateById';
 
 export const finish = async (id: number, finalValue: number): Promise<void> => {
     try {
@@ -14,24 +15,24 @@ export const finish = async (id: number, finalValue: number): Promise<void> => {
             //🔹 2. Calcula o total das vendas
             const totalValue = await getTotalValue(trx, id);
 
-            //🔹 3. Verifica se é retroativo
-            const lastFincash = await trx(ETableNames.fincashs).select('id').orderBy('created_at', 'desc').first();
-            const retroactive = lastFincash && lastFincash.id !== id;
-
-            //🔹 4. Atualiza
-            const updateData: Record<string, unknown> = {
+            //🔹 3.1 Atualiza o caixa
+            const updateData = {
                 finalValue,
+                finalDate: fincash.finalDate ?? trx.fn.now(),
                 isFinished: true,
                 totalValue,
             };
 
-            if (!retroactive && !fincash.finalDate) {
-                updateData.finalDate = trx.fn.now();
-            }
-
             await trx(ETableNames.fincashs)
                 .update(updateData)
                 .where('id', id);
+
+            //🔹 3.2 Atualiza caixa seguinte caso necessário
+            const nextFincash = await getNextFincash(trx, id);
+            if (nextFincash) {
+                const nextDiferenceLastFincash = (nextFincash.value - finalValue) || null;
+                await trx(ETableNames.fincashs).update({ diferenceLastFincash: nextDiferenceLastFincash, updated_at: Knex.fn.now() }).where('id', '=', nextFincash.id);
+            }
         });
     } catch (e) {
         console.error(e);
