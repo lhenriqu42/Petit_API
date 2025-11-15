@@ -64,7 +64,7 @@ const reCalc = async (trx: def_knex.Transaction, fincash: IFincash, content: { o
     return { break: realBreak, diferenceLastFincash, invoicing, ...content };
 };
 
-async function getPreviousFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
+export async function getPreviousFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
     const previousFincash = await trx(ETableNames.fincashs)
         .select('*')
         .where('id', '<', atualFincashId)
@@ -73,7 +73,7 @@ async function getPreviousFincash(trx: def_knex.Transaction, atualFincashId: num
     return previousFincash;
 }
 
-async function getNextFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
+export async function getNextFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
     const nextFincash = await trx(ETableNames.fincashs)
         .select('*')
         .where('id', '>', atualFincashId)
