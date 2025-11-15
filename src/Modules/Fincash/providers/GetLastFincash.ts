@@ -7,9 +7,9 @@ export const getLastFincash = async (): Promise<IFincash | Error> => {
         const result = await Knex(ETableNames.fincashs)
             .select('*')
             .where('isFinished', true)
-            .orderBy('finalDate', 'desc')
+            .orderBy('id', 'desc')
             .first();
-
+        // console.log(result)
         if (result) return result;
 
         return new Error('Get Failed');

@@ -7,7 +7,7 @@ export const finish = async (id: number, finalValue: number): Promise<void> => {
     try {
         await Knex.transaction(async trx => {
             //🔹 1. Busca o caixa
-            const fincash = await trx(ETableNames.fincashs).select('id', 'isFinished').where('id', id).first();
+            const fincash = await trx(ETableNames.fincashs).select('id', 'isFinished', 'finalDate').where('id', id).first();
             if (!fincash) throw new NotFoundError('Fincash not found');
             if (fincash.isFinished) throw new ConflictError('Fincash already finished');
 
@@ -25,7 +25,7 @@ export const finish = async (id: number, finalValue: number): Promise<void> => {
                 totalValue,
             };
 
-            if (!retroactive) {
+            if (!retroactive && !fincash.finalDate) {
                 updateData.finalDate = trx.fn.now();
             }
 
