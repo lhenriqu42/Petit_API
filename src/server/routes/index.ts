@@ -10,7 +10,9 @@ import {
     PurchaseController,
     ProdGroupController,
     SaleDetailController,
+    NFEmitterController,
     CashOutflowController,
+    SupplierProdMapController,
 } from './../../Modules/Controllers';
 import { Router } from 'express';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
@@ -150,6 +152,8 @@ router.put('/purchase/:purchase_id', ensureAdmin, PurchaseController.editPurchas
 router.get('/purchase/:purchase_id', ensureAdmin, PurchaseController.getPurchaseDetailsValidation, PurchaseController.getPurchaseDetails);
 router.put('/purchase/complete/:purchase_id', ensureAdmin, PurchaseController.completePurchaseValidation, PurchaseController.completePurchase);
 
+
+
 // PACK
 router.post('/pack', ensureAdmin, PackController.createValidation, PackController.create);
 router.get('/pack', ensureAdmin, PackController.getPacksValidation, PackController.getPacks);
@@ -157,12 +161,24 @@ router.get('/pack/products', ensureAdmin, PackController.getProdsValidation, Pac
 router.delete('/pack/:id', ensureAdmin, PackController.deleteByIdValidation, PackController.deleteById);
 router.get('/pack/:prodId', ensureAdmin, PackController.getPacksByProdValidation, PackController.getPacksByProd);
 router.get('/pack/getProds/:packId', ensureAdmin, PackController.getProdsByPackValidation, PackController.getProdsByPack);
-
-
 router.post('/pack/putPacks/:prodId', ensureAdmin, PackController.putPacksInProdValidation, PackController.putPacksInProd);
 router.post('/pack/putProds/:packId', ensureAdmin, PackController.putProdsInPackValidation, PackController.putProdsInPack);
-
 router.delete('/pack/removePacks/:prodId', ensureAdmin, PackController.removePacksByProdValidation, PackController.removePacksByProd);
 router.delete('/pack/removeProds/:packId', ensureAdmin, PackController.removeProdsByPackValidation, PackController.removeProdsByPack);
+
+
+
+// NFEMITTER
+router.post('/nfemitter', ensureAdmin, NFEmitterController.createValidation, NFEmitterController.create);
+router.get('/nfemitter/:cnpj', ensureAdmin, NFEmitterController.getByCnpjValidation, NFEmitterController.getByCnpj);
+router.put('/nfemitter/:emitter_id/linkSupplier', ensureAdmin, NFEmitterController.linkToSupplierValidation, NFEmitterController.linkToSupplier);
+
+
+
+// PROD SUP MAP
+router.post('/supplier-prod-map', ensureAdmin, SupplierProdMapController.createValidation, SupplierProdMapController.create);
+router.get('/supplier-prod-map/:supplier_id/:supplier_prod_id', ensureAdmin, SupplierProdMapController.getMapValidation, SupplierProdMapController.getMap);
+
+
 
 export { router };

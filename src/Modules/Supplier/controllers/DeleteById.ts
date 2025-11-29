@@ -4,6 +4,7 @@ import * as yup from 'yup';
 
 import { SupplierProvider } from '../providers';
 import { validation } from '../../../server/shared/middleware';
+import AppError from '../../../server/shared/Errors';
 
 interface IParamProps {
     id?: number,
@@ -26,14 +27,12 @@ export const deleteById = async (req: Request<IParamProps>, res: Response) => {
         });
     }
 
-    const result = await SupplierProvider.deleteById(req.params.id);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            errors: {
-                default: result.message
-            }
-        });
+    try {
+        await SupplierProvider.deleteById(req.params.id);
+        return res.status(StatusCodes.NO_CONTENT).send();
+    } catch (e) {
+        const appError = e as AppError;
+        return res.status(appError.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({ message: appError.message });
     }
 
-    return res.status(StatusCodes.NO_CONTENT).send();
 };

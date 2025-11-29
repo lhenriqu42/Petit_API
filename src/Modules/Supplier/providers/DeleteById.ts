@@ -1,24 +1,32 @@
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
-
-export const deleteById = async (id: number): Promise<void | Error> => {
+import AppError, { NotFoundError } from '../../../server/shared/Errors';
+export const deleteById = async (id: number): Promise<void> => {
     try {
-        const deleted = await Knex(ETableNames.suppliers).select('id').where('id', id).andWhere('deleted_at', null).first();
-        if (deleted) {
-            const result = await Knex(ETableNames.suppliers)
+        await Knex.transaction(async trx => {
+            // 🔹 1. Verifica se o registro existe e não está deletado
+            const deleted = await trx(ETableNames.suppliers).select('id').where('id', id).andWhere('deleted_at', null).first();
+            if (!deleted) throw new NotFoundError('Supplier not found or already deleted');
+
+            // 🔹 2. Realiza o delete lógico
+            await trx(ETableNames.suppliers)
                 .update({
-                    deleted_at: Knex.fn.now(),
+                    deleted_at: trx.fn.now(),
                 })
                 .where('id', '=', id);
 
-            if (result > 0) return;
-
-            return new Error('Delete Failed');
-        } else {
-            return new Error('This Object has already been deleted');
-        }
+            // 🔹 3. Reseta o registro em NFEmitter
+            await trx(ETableNames.nf_emitters)
+                .update({
+                    supplier_id: null,
+                })
+                .where('supplier_id', '=', id);
+        });
     } catch (e) {
+        if (e instanceof AppError) {
+            throw e;
+        }
         console.log(e);
-        return new Error('Delete Failed');
+        throw new AppError('Delete Failed');
     }
 };
