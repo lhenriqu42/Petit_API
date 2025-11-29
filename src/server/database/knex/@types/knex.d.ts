@@ -10,13 +10,15 @@ import {
     ISupplier,
     IValidity,
     IProdPack,
+    INFEmitter,
     IPurchases,
     IProdOutput,
     ICashOutflow,
     ISaleDetails,
     IProduct_group,
-    IPurchaseDetails
-} from '../../../server/database/models';
+    IPurchaseDetails,
+    ISupplierProdMap
+} from '../../models';
 
 declare module 'knex/types/tables' {
     interface Tables {
@@ -29,6 +31,7 @@ declare module 'knex/types/tables' {
         fincashs: IFincash;
         payments: IPayment;
         suppliers: ISupplier;
+        nf_emitters: INFEmitter;
         prod_packs: IProdPack;
         validities: IValidity;
         purchases: IPurchases;
@@ -37,5 +40,6 @@ declare module 'knex/types/tables' {
         cash_outflows: ICashOutflow;
         product_groups: IProduct_group;
         purchase_details: IPurchaseDetails;
+        supplier_prod_map: ISupplierProdMap;
     }
 }

@@ -41,8 +41,8 @@ export const updateById = async (fincash_id: number, content: { opener: string, 
 
 const reCalc = async (trx: def_knex.Transaction, fincash: IFincash, content: { opener: string, value: number, finalValue: number, cardValue: number, obs?: string }) => {
     // 🔹 1. Tenta pegar o caixa anterior e o próximo
-    const previousFincash: IFincash = await getPreviousFincash(trx, fincash.id);
-    const nextFincash: IFincash = await getNextFincash(trx, fincash.id);
+    const previousFincash: IFincash | undefined = await getPreviousFincash(trx, fincash.id);
+    const nextFincash: IFincash | undefined = await getNextFincash(trx, fincash.id);
 
     // 🔹 2. Atualiza os valores do caixa atual
     fincash.value = content.value;
@@ -64,7 +64,7 @@ const reCalc = async (trx: def_knex.Transaction, fincash: IFincash, content: { o
     return { break: realBreak, diferenceLastFincash, invoicing, ...content };
 };
 
-export async function getPreviousFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
+export async function getPreviousFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash | undefined> {
     const previousFincash = await trx(ETableNames.fincashs)
         .select('*')
         .where('id', '<', atualFincashId)
@@ -73,7 +73,7 @@ export async function getPreviousFincash(trx: def_knex.Transaction, atualFincash
     return previousFincash;
 }
 
-export async function getNextFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash> {
+export async function getNextFincash(trx: def_knex.Transaction, atualFincashId: number): Promise<IFincash | undefined> {
     const nextFincash = await trx(ETableNames.fincashs)
         .select('*')
         .where('id', '>', atualFincashId)

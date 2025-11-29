@@ -8,5 +8,7 @@ export * from './Purchase/controllers';
 export * from './Validity/controllers';
 export * from './Supplier/controllers';
 export * from './ProdGroup/controllers';
+export * from './NFEmitter/controllers';
 export * from './SaleDetail/controllers';
 export * from './CashOutflow/controllers';
+export * from './SupplierProdMap/controllers';

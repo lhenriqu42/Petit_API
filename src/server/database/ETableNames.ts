@@ -16,4 +16,6 @@ export enum ETableNames {
     purchase_details = 'purchase_details',
     packs = 'packs',
     prod_packs = 'prod_packs',
+    supplier_prod_map = 'supplier_prod_map',
+    nf_emitters = 'nf_emitters',
 }
