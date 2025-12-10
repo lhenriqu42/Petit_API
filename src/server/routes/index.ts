@@ -1,7 +1,6 @@
 import {
     UserController,
     PackController,
-    StockController,
     ProductController,
     FincashController,
     PaymentController,
@@ -104,15 +103,6 @@ router.delete('/group/:id', ensureAuthenticated, ProdGroupController.deleteGroup
 router.post('/group/product/:id', ensureAuthenticated, ProdGroupController.putProdInGroupValidation, ProdGroupController.putProdInGroup);
 router.get('/group/product/:id', ensureAuthenticated, ProdGroupController.getProductsByIdValidation, ProdGroupController.getProductsById);
 router.post('/group/product/remove/:id', ensureAuthenticated, ProdGroupController.deleteProductByIdValidation, ProdGroupController.deleteProductById);
-
-
-
-// STOCK
-router.get('/stock', ensureAuthenticated, StockController.getAllValidation, StockController.getAll);
-router.post('/stock', ensureAuthenticated, StockController.createValidation, StockController.create);
-// router.get('/stock/:id', ensureAuthenticated, StockController.getAllByIdValidation, StockController.getAllById);
-router.put('/stock/:id', ensureAuthenticated, ensureAdmin, StockController.updateByIdValidation, StockController.updateById);
-// router.delete('/stock/:id', ensureAuthenticated, ensureAdmin, StockController.deleteByIdValidation, StockController.deleteById);
 
 
 

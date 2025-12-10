@@ -4,6 +4,7 @@ import * as yup from 'yup';
 
 import { SaleDetailProvider } from '../providers';
 import { validation } from '../../../server/shared/middleware';
+import AppError from '../../../server/shared/Errors';
 
 interface IParamProps {
     id?: number,
@@ -25,14 +26,15 @@ export const cancelSale = async (req: Request<IParamProps>, res: Response) => {
             }
         });
     }
-    const result = await SaleDetailProvider.cancelSale(req.params.id);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    try {
+        await SaleDetailProvider.cancelSale(req.params.id);
+        return res.status(StatusCodes.NO_CONTENT).send();
+    } catch (error) {
+        const appError = error as AppError;
+        return res.status(appError.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
-                default: result.message
+                default: appError.message || 'Internal server error'
             }
         });
     }
-
-    return res.status(StatusCodes.NO_CONTENT).json(result);
 };

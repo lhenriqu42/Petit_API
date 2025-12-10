@@ -8,15 +8,10 @@ export const create = async (product: Omit<IProduct, 'id' | 'created_at' | 'upda
             .insert(product)
             .returning('id');
 
-        if (typeof result === 'object') {
-            await Knex(ETableNames.stocks).insert({ prod_id: result.id, stock: 0 });
+        if (typeof result === 'object') 
             return result.id;
-
-        } else if (typeof result === 'number') {
-            await Knex(ETableNames.stocks).insert({ prod_id: result, stock: 0 });
+        else if (typeof result === 'number') 
             return result;
-        }
-
         return new Error('Register Failed');
     } catch (e) {
         console.log(e);

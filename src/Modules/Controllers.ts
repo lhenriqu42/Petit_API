@@ -1,6 +1,5 @@
 export * from './Pack/controllers';
 export * from './User/controllers';
-export * from './Stock/controllers';
 export * from './Payment/controllers';
 export * from './Product/controllers';
 export * from './Fincash/controllers';

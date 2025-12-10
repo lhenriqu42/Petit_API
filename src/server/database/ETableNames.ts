@@ -4,7 +4,7 @@ export enum ETableNames {
     saleDetails = 'sale_details',
     fincashs = 'fincashs',
     cashOutflows = 'cash_outflows',
-    stocks = 'stocks',
+    // stocks = 'stocks', // Deprecated: Use 'product_costs' table instead
     groups = 'groups',
     product_groups = 'product_groups',
     validities = 'validities',

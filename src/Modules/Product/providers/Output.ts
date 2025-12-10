@@ -1,24 +1,32 @@
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
 import { IProdOutput } from '../../../server/database/models';
+import AppError from '../../../server/shared/Errors';
+import { movementStock } from '../../Stock/utils/MovementStock';
 
-
-export const output = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'>): Promise<number | Error> => {
+export const output = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'>): Promise<number> => {
     try {
-
-        const Stock = await Knex(ETableNames.stocks).select('*').where('prod_id', prod_output.prod_id).first();
-        if (!Stock) return Error('Stock not Found');
-
-        const result = await Knex(ETableNames.prod_output).insert(prod_output);
-        if (!result) return Error('Insert Error');
-
-        const output = await Knex(ETableNames.stocks).update({ stock: (Stock.stock - prod_output.quantity), updated_at: Knex.fn.now() }).where('prod_id', prod_output.prod_id);
-        if (!output) return Error('Update Stock Error');
-
-        return output;
-
+        const result = await Knex.transaction(async (trx) => {
+            const [outputId] = await trx(ETableNames.prod_output).insert(prod_output);
+            await movementStock(
+                trx,
+                {
+                    direction: 'out',
+                    prod_id: prod_output.prod_id,
+                    quantity: prod_output.quantity,
+                    notes: `Output ID: ${outputId} - Reason: ${prod_output.reason} - Desc: ${prod_output.desc || 'No description'}`,
+                    origin_id: outputId,
+                    origin_type: 'prod_output'
+                }
+            );
+            return outputId;
+        });
+        return result;
     } catch (e) {
+        if (e instanceof AppError) {
+            throw e;
+        }
         console.log(e);
-        return new Error('Fincash not Found');
+        throw new AppError('Output Failed');
     }
 };

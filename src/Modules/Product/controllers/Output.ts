@@ -4,6 +4,7 @@ import { validation } from '../../../server/shared/middleware';
 import { IProdOutput } from '../../../server/database/models';
 import { ProductProvider } from '../providers';
 import { StatusCodes } from 'http-status-codes';
+import AppError from '../../../server/shared/Errors';
 
 interface IBodyProps extends Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'> { }
 
@@ -27,13 +28,15 @@ export const outputValidation = validation({
 });
 
 export const output: RequestHandler = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
-    const result = await ProductProvider.output(req.body);
-    if (result instanceof Error) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    try {
+        const result = await ProductProvider.output(req.body);
+        return res.status(StatusCodes.CREATED).json({ outputId: result });
+    } catch (error) {
+        const appError = error as AppError;
+        return res.status(appError.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR).json({
             errors: {
-                default: result.message
+                default: appError.message
             }
         });
     }
-    return res.status(StatusCodes.CREATED).json(result);
 };

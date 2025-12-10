@@ -1,8 +1,9 @@
 export const  ORIGIN_TYPES = [
-    'purchase',
-    'sale',
-    'manual',
-    'return'
+    'purchase',     // ENTRADA
+    'sale',         // SAÍDA
+    'return',       // ENTRADA
+    'prod_output',  // SAÍDA
+    'manual',       // ENTRADA ou SAÍDA
 ] as const;
 
 export type TOriginType = typeof ORIGIN_TYPES[number] | null;

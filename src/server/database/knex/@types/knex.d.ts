@@ -17,7 +17,10 @@ import {
     ISaleDetails,
     IProduct_group,
     IPurchaseDetails,
-    ISupplierProdMap
+    ISupplierProdMap,
+    IProductCosts,
+    IStockMovements
+
 } from '../../models';
 
 declare module 'knex/types/tables' {
@@ -41,5 +44,7 @@ declare module 'knex/types/tables' {
         product_groups: IProduct_group;
         purchase_details: IPurchaseDetails;
         supplier_prod_map: ISupplierProdMap;
+        stock_movements: IStockMovements;
+        product_costs: IProductCosts;
     }
 }

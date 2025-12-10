@@ -10,7 +10,6 @@ const DEFAULT_LIMIT = 7;
 const DEFAULT_FILTER = '';
 
 interface IQueryProps {
-    id?: number;
     page?: number,
     limit?: number,
     filter?: string,
@@ -30,7 +29,7 @@ export const getAllValidation = validation({
 });
 
 export const getAll: RequestHandler = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
-    const result = await ProductProvider.getAll(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.query.filter || DEFAULT_FILTER, Number(req.query.id || 0), req.query.orderByStock);
+    const result = await ProductProvider.getAll(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.query.filter || DEFAULT_FILTER, req.query.orderByStock);
     const count = await ProductProvider.count(req.query.filter);
 
     if (result instanceof Error) {
