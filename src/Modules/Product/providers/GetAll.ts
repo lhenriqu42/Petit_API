@@ -7,7 +7,9 @@ export const getAll = async (page: number, limit: number, filter: string, orderB
         const query = Knex(ETableNames.products)
             .select(
                 `${ETableNames.products}.*`,
-                Knex.raw(`COALESCE(${ETableNames.product_costs}.stock_quantity, 0) as stock`)
+                Knex.raw(`COALESCE(${ETableNames.product_costs}.stock_quantity, 0) as stock`),
+                Knex.raw(`${ETableNames.product_costs}.avg_cost as avg_cost`),
+                Knex.raw(`${ETableNames.product_costs}.last_cost as last_unit_cost`),
             )
             .leftJoin(ETableNames.product_costs, `${ETableNames.product_costs}.prod_id`, `${ETableNames.products}.id`)
             .where(function () {

@@ -13,9 +13,6 @@ LEFT JOIN products p ON p.id = s.prod_id;
 
 =============================================
 
-
-
-
 -- SOLUCAO 2
 WITH LastPurchase AS (
     SELECT DISTINCT ON (prod_id)
@@ -51,8 +48,11 @@ SELECT
     TRUE AS affect_wac
 FROM CalculatedPackSize c;
 
+=============================================
 
--- VISUALIZAR COM NOMES DOS PRODUTOS
+
+
+-- SOLUCAO 3
 WITH LastPurchase AS (
     SELECT DISTINCT ON (prod_id)
         prod_id,
@@ -64,7 +64,6 @@ WITH LastPurchase AS (
 ),
 CalculatedPackSize AS (
     SELECT
-        p.name AS prod_name,
         s.prod_id,
         s.stock,
         lp.price,
@@ -75,17 +74,27 @@ CalculatedPackSize AS (
             ELSE 1
         END AS packSize
     FROM stocks s
-    LEFT JOIN LastPurchase lp ON lp.prod_id = s.prod_id
+    -- LEFT JOIN LastPurchase lp ON lp.prod_id = s.prod_id -- COM NULOS
+    JOIN LastPurchase lp ON lp.prod_id = s.prod_id -- COM NULOS
     LEFT JOIN packs pk ON pk.id = lp.pack_id
-    LEFT JOIN products p ON p.id = s.prod_id
 )
+-- INSERT INTO product_costs (
+--     prod_id,
+--     avg_cost,
+--     last_cost,
+--     stock_quantity,
+--     updated_at
+-- )
 SELECT
-    c.prod_name,
     c.prod_id,
-    'in' AS direction,
-    c.stock AS quantity,
-    c.price / c.packSize AS unit_cost,
-    c.stock * c.price / c.packSize AS total_cost,
-    NOW() AS created_at,
-    TRUE AS affect_wac
-FROM CalculatedPackSize c;
+    c.price / c.packSize AS avg_cost,
+    c.price / c.packSize AS last_cost,
+    c.stock AS stock_quantity,
+    NOW() AS updated_at
+FROM CalculatedPackSize c
+-- ON CONFLICT (prod_id)
+-- DO UPDATE SET
+--     avg_cost      = EXCLUDED.avg_cost,
+--     last_cost     = EXCLUDED.last_cost,
+--     stock_quantity = EXCLUDED.stock_quantity,
+--     updated_at     = EXCLUDED.updated_at;
