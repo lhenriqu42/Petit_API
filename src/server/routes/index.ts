@@ -1,6 +1,7 @@
 import {
     UserController,
     PackController,
+    StockController,
     ProductController,
     FincashController,
     PaymentController,
@@ -8,8 +9,8 @@ import {
     ValidityController,
     PurchaseController,
     ProdGroupController,
-    SaleDetailController,
     NFEmitterController,
+    SaleDetailController,
     CashOutflowController,
     SupplierProdMapController,
 } from './../../Modules/Controllers';
@@ -91,6 +92,12 @@ router.post('/login', UserController.signInValidation, UserController.signIn);
 router.delete('/user/:id', UserController.deleteByIdValidation, UserController.deleteById);
 router.get('/user', ensureAuthenticated, ensureAdmin, UserController.getAllValidation, UserController.getAll);
 router.post('/register', ensureAuthenticated, ensureAdmin, UserController.createValidation, UserController.signUp);
+
+
+
+// STOCK
+router.put('/stock/update/:prod_id', ensureAuthenticated, ensureAdmin, StockController.updateValidation, StockController.update);
+router.put('/stock/updateTo/:prod_id', ensureAuthenticated, ensureAdmin, StockController.updateValidation, StockController.updateTo);
 
 
 

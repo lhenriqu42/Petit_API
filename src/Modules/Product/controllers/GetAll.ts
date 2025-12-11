@@ -13,7 +13,7 @@ interface IQueryProps {
     page?: number,
     limit?: number,
     filter?: string,
-    orderByStock?: boolean;
+    orderByStock?: string;
 }
 
 const queryValidation: yup.Schema<IQueryProps> = yup.object().shape({
@@ -21,7 +21,7 @@ const queryValidation: yup.Schema<IQueryProps> = yup.object().shape({
     page: yup.number().moreThan(0),
     limit: yup.number().moreThan(0),
     filter: yup.string(),
-    orderByStock: yup.boolean(),
+    orderByStock: yup.string().oneOf(['true', 'false']),
 });
 
 export const getAllValidation = validation({
@@ -29,7 +29,7 @@ export const getAllValidation = validation({
 });
 
 export const getAll: RequestHandler = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
-    const result = await ProductProvider.getAll(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.query.filter || DEFAULT_FILTER, req.query.orderByStock);
+    const result = await ProductProvider.getAll(req.query.page || DEFAULT_PAGE, req.query.limit || DEFAULT_LIMIT, req.query.filter || DEFAULT_FILTER, req.query.orderByStock === 'true');
     const count = await ProductProvider.count(req.query.filter);
 
     if (result instanceof Error) {

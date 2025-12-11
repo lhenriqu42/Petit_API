@@ -16,11 +16,9 @@ export const getAll = async (page: number, limit: number, filter: string, orderB
             })
             .offset((page - 1) * limit)
             .limit(limit);
-
         if (orderByStock) {
-            query.orderByRaw(`COALESCE(${ETableNames.product_costs}.stock_quantity, 0) ASC`);
+            query.orderByRaw(`COALESCE(${ETableNames.product_costs}.stock_quantity, 0) DESC`);
         }
-        query.orderBy(`${ETableNames.products}.updated_at`, 'desc');
         const result = await query;
         return result;
     } catch (e) {

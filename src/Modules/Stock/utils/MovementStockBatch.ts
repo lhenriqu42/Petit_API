@@ -19,6 +19,7 @@ interface IRowIN {
 interface IStockMovementBatchBase {
     origin_type?: TOriginType;
     origin_id?: number | null;
+    affect_wac?: boolean;
 }
 
 interface IStockIN  extends IStockMovementBatchBase {
@@ -43,6 +44,7 @@ export const movementStockBatch = (trx: def_knex.Transaction, params: RequestPar
         origin_type: params.origin_type || null,
         origin_id: params.origin_id || null,
         notes: row.notes || null,
+        affect_wac: params.affect_wac
     }));
 
 

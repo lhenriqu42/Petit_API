@@ -24,4 +24,5 @@ export interface IStockMovements {
     notes?: string | null;
 
     created_at: Date;
+    affect_wac: boolean;
 }

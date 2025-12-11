@@ -4,7 +4,7 @@ import { IStockMovements } from '../../../server/database/models';
 
 type IFilterDTO = Partial<IStockMovements>;
 type ISelectDTO<T extends keyof IStockMovements> = T[] | '*';
-export const getMoviments = async <T extends keyof IStockMovements>(trx: def_knex.Transaction, select: ISelectDTO<T>, filters: IFilterDTO) : Promise<Pick<IStockMovements, T>[] | null> => {
+export const getMovements = async <T extends keyof IStockMovements>(trx: def_knex.Transaction, select: ISelectDTO<T>, filters: IFilterDTO) : Promise<Pick<IStockMovements, T>[] | null> => {
     const query = trx(ETableNames.stock_movements).select(select);
 
     const filterKeys = Object.keys(filters) as (keyof typeof filters)[];

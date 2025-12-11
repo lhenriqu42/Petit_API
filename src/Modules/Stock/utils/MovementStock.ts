@@ -9,9 +9,10 @@ interface IStockMovementBase {
     origin_type?: TOriginType;
     origin_id?: number | null;
     notes?: string | null;
+    affect_wac?: boolean;
 }
 
-interface IStockIN  extends IStockMovementBase {
+interface IStockIN extends IStockMovementBase {
     direction: 'in';
     unit_cost: number;
 }
@@ -21,7 +22,7 @@ interface IStockOUT extends IStockMovementBase {
     unit_cost?: never;
 }
 
-type  RequestParameters = IStockIN | IStockOUT;
+export type RequestParameters = IStockIN | IStockOUT;
 
 export const movementStock = (trx: def_knex.Transaction, params: RequestParameters) => {
     return trx(ETableNames.stock_movements).insert({
@@ -32,5 +33,6 @@ export const movementStock = (trx: def_knex.Transaction, params: RequestParamete
         origin_type: params.origin_type || null,
         origin_id: params.origin_id || null,
         notes: params.notes || null,
+        affect_wac: params.affect_wac
     });
 };

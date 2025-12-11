@@ -1,6 +1,6 @@
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
-import { getMoviments } from '../../Stock/utils/GetMoviments';
+import { getMovements } from '../../Stock/utils/GetMovements';
 import { movementStockBatch } from '../../Stock/utils/MovementStockBatch';
 import AppError, { NotFoundError, ConflictError, BadRequestError } from '../../../server/shared/Errors';
 
@@ -25,7 +25,7 @@ export const cancelSale = async (sale_id: number): Promise<void> => {
 
         await Knex.transaction(async trx => {
             // BUSCAR MOVIMENTAÇÕES DE ESTOQUE RELACIONADAS À VENDA
-            const moviments = await getMoviments(trx, '*', { origin_id: sale_id, origin_type: 'sale' });
+            const moviments = await getMovements(trx, '*', { origin_id: sale_id, origin_type: 'sale' });
             if (!moviments || moviments.length === 0) throw new NotFoundError('Stock movements not found for this sale');
             const stocksValues = new Map<number, number>();
             for (const moviment of moviments) {
@@ -37,6 +37,7 @@ export const cancelSale = async (sale_id: number): Promise<void> => {
             await movementStockBatch(
                 trx,
                 {
+                    affect_wac: false,
                     direction: 'in',
                     origin_type: 'return',
                     origin_id: sale_id,

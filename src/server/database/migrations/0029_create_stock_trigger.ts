@@ -33,11 +33,17 @@ export async function up(knex: Knex): Promise<void> {
                 v_new_stock INT;
                 v_new_wac DECIMAL(14,4);
             BEGIN
-                ---------------------------------------------------------------------
-                -- ENTRADA: recalcula WAC
-                ---------------------------------------------------------------------
+                -- Calcula novo stock
                 IF m.direction = 'in' THEN
                     v_new_stock := old_stock + m.quantity;
+                ELSE
+                    v_new_stock := old_stock - m.quantity;
+                END IF;
+
+                ---------------------------------------------------------------------
+                -- recalcula WAC
+                ---------------------------------------------------------------------
+                IF m.affect_wac = true THEN
 
                     v_new_wac := (
                         (old_stock * old_wac) +
@@ -53,10 +59,9 @@ export async function up(knex: Knex): Promise<void> {
                     WHERE prod_id = m.prod_id;
 
                 ---------------------------------------------------------------------
-                -- SAÍDA: não recalcula WAC
+                -- não recalcula WAC
                 ---------------------------------------------------------------------
                 ELSE
-                    v_new_stock := old_stock - m.quantity;
 
                     UPDATE ${ETableNames.product_costs}
                     SET 
@@ -76,6 +81,14 @@ export async function up(knex: Knex): Promise<void> {
                 v_old_stock INT := 0;
                 v_old_wac DECIMAL(14,4) := 0;
             BEGIN
+                -- Caso affect_wac não tenha sido passado
+                IF NEW.affect_wac IS NULL THEN 
+                    NEW.affect_wac := CASE
+                        WHEN NEW.direction = 'in' THEN true
+                        ELSE false
+                    END;
+                END IF;
+
                 -- Busca custos atuais com FOR UPDATE (para lock)
                 SELECT stock_quantity, avg_cost
                 INTO v_old_stock, v_old_wac
