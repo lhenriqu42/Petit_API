@@ -55,6 +55,7 @@ export const seed = async () => {
     // if (!Number.isInteger(count) || count > 0) return;
 
     const productsToInsert: Omit<IProduct, 'id' | 'created_at'>[] = Products.map(product => ({
+        id: Number(product.id),
         code: product.code,
         name: product.name,
         sector: product.sector,

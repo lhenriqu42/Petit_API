@@ -19,6 +19,7 @@ export const getAll = async (page: number, limit: number, filter: string, orderB
         if (orderByStock) {
             query.orderByRaw(`COALESCE(${ETableNames.product_costs}.stock_quantity, 0) DESC`);
         }
+        query.orderByRaw(`${ETableNames.product_costs}.updated_at DESC NULLS LAST`);
         const result = await query;
         return result;
     } catch (e) {
