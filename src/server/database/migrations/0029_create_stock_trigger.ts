@@ -45,10 +45,13 @@ export async function up(knex: Knex): Promise<void> {
                 ---------------------------------------------------------------------
                 IF m.affect_wac = true THEN
 
-                    v_new_wac := (
-                        (old_stock * old_wac) +
-                        (m.quantity * COALESCE(m.unit_cost, 0))
-                    ) / NULLIF(v_new_stock, 0);
+                    IF old_stock <= 0 THEN
+                        -- estamos "normalizando" um estoque negativo
+                        -- usa APENAS o custo da compra
+                        v_new_wac := m.unit_cost;
+                    ELSE
+                        v_new_wac := ((old_stock * old_wac) + (m.quantity * COALESCE(m.unit_cost, 0))) / NULLIF(v_new_stock, 0);
+                    END IF;
 
                     UPDATE ${ETableNames.product_costs}
                     SET 
