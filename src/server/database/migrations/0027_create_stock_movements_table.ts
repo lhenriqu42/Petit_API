@@ -17,6 +17,10 @@ export async function up(knex: Knex): Promise<void> {
             table.string('notes', 255).nullable().defaultTo(null);
             table.timestamp('created_at').defaultTo(trx.fn.now()).notNullable();
             table.boolean('affect_wac').notNullable().index();
+
+            table.decimal('wac_after_movement', 14, 4).notNullable();
+            table.integer('stock_after_movement').notNullable();
+            table.decimal('stock_cost_after_movement', 14, 4).notNullable();
         });
     });
 }

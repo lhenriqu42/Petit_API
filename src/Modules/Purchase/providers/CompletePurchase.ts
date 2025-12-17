@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from '../../../server/shared/Errors';
+import AppError, { ConflictError, NotFoundError } from '../../../server/shared/Errors';
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
 import { movementStockBatch } from '../../Stock/utils/MovementStockBatch';
@@ -80,7 +80,8 @@ export const completePurchase = async (purchase_id: number): Promise<void> => {
             await trx(ETableNames.purchases).where({ id: purchase_id }).update({ effected: true, updated_at: trx.fn.now() });
         });
     } catch (e) {
-        console.error(e);
-        throw e;
+        if (e instanceof AppError) throw e;
+        console.log(e);
+        throw new AppError('Erro ao completar compra');
     }
 };

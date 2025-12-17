@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import { validation } from '../../../server/shared/middleware';
 
 import { StatusCodes } from 'http-status-codes';
-import { PurchaseProvider } from '../../../Modules/Purchase/providers';
+import { PurchaseProvider } from '../providers';
 import AppError from '../../../server/shared/Errors';
 
 interface IParamsProps { purchase_id?: number; }

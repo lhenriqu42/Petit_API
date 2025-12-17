@@ -25,4 +25,8 @@ export interface IStockMovements {
 
     created_at: Date;
     affect_wac: boolean;
+
+    wac_after_movement: number;         // Calculado Automaticamente
+    stock_after_movement: number;       // Calculado Automaticamente
+    stock_cost_after_movement: number;  // Calculado Automaticamente
 }

@@ -13,6 +13,7 @@ import {
     SaleDetailController,
     CashOutflowController,
     SupplierProdMapController,
+    ReportController,
 } from './../../Modules/Controllers';
 import { Router } from 'express';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
@@ -176,6 +177,17 @@ router.put('/nfemitter/:emitter_id/linkSupplier', ensureAdmin, NFEmitterControll
 router.post('/supplier-prod-map', ensureAdmin, SupplierProdMapController.createValidation, SupplierProdMapController.create);
 router.get('/supplier-prod-map/:supplier_id/:supplier_prod_id', ensureAdmin, SupplierProdMapController.getMapValidation, SupplierProdMapController.getMap);
 
+
+
+// REPORTS
+router.get('/report', ensureAdmin, ReportController.getReportDataValidation, ReportController.getReportData);
+
+
+
+// DEFAULT ROUTE
+router.get('/', (_, res) => {
+    res.send('API is running');
+});
 
 
 export { router };

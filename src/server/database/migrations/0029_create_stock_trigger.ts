@@ -28,7 +28,7 @@ export async function up(knex: Knex): Promise<void> {
                 old_stock INT,
                 old_wac DECIMAL(14,4)
             )
-            RETURNS VOID AS $$
+            RETURNS ${ETableNames.stock_movements} AS $$
             DECLARE
                 v_new_stock INT;
                 v_new_wac DECIMAL(14,4);
@@ -52,7 +52,7 @@ export async function up(knex: Knex): Promise<void> {
                     ELSE
                         v_new_wac := ((old_stock * old_wac) + (m.quantity * COALESCE(m.unit_cost, 0))) / NULLIF(v_new_stock, 0);
                     END IF;
-
+                    v_new_wac := COALESCE(ROUND(v_new_wac, 4), 0);
                     UPDATE ${ETableNames.product_costs}
                     SET 
                         stock_quantity = v_new_stock,
@@ -72,6 +72,10 @@ export async function up(knex: Knex): Promise<void> {
                         updated_at = NOW()
                     WHERE prod_id = m.prod_id;
                 END IF;
+                m.wac_after_movement := COALESCE(v_new_wac, old_wac);
+                m.stock_after_movement := v_new_stock;
+                m.stock_cost_after_movement := ROUND(m.wac_after_movement * m.stock_after_movement, 4);
+                RETURN m;
             END;
             $$ LANGUAGE plpgsql;
         `);
@@ -113,7 +117,7 @@ export async function up(knex: Knex): Promise<void> {
                 NEW := recalc_stock_movements(NEW, v_old_wac);
 
                 -- 🔹 Agora recalcula os custos → usa os campos já modificados
-                PERFORM recalc_product_costs(NEW, v_old_stock, v_old_wac);
+                NEW := recalc_product_costs(NEW, v_old_stock, v_old_wac);
 
                 RETURN NEW;
             END;
