@@ -1,14 +1,5 @@
-import * as create from './Create';
-import * as getAllById from './GetAllById';
-import * as getAll from './GetAll';
-import * as updateById from './UpdateById';
-import * as deleteById from './DeleteById';
+import * as update from './UpdateStock';
 
 export const StockController = {
-    ...create,
-    ...getAll,
-    ...getAllById,
-    ...updateById,
-    ...deleteById,
-
+    ...update,
 };

@@ -9,10 +9,11 @@ import {
     ValidityController,
     PurchaseController,
     ProdGroupController,
-    SaleDetailController,
     NFEmitterController,
+    SaleDetailController,
     CashOutflowController,
     SupplierProdMapController,
+    ReportController,
 } from './../../Modules/Controllers';
 import { Router } from 'express';
 import { ensureAuthenticated, ensureAdmin } from '../shared/middleware';
@@ -95,6 +96,12 @@ router.post('/register', ensureAuthenticated, ensureAdmin, UserController.create
 
 
 
+// STOCK
+router.put('/stock/update/:prod_id', ensureAuthenticated, ensureAdmin, StockController.updateValidation, StockController.update);
+router.put('/stock/updateTo/:prod_id', ensureAuthenticated, ensureAdmin, StockController.updateValidation, StockController.updateTo);
+
+
+
 // GROUP
 router.get('/group/show', ensureAuthenticated, ProdGroupController.getShowGroups);
 router.get('/group', ensureAuthenticated, ProdGroupController.getAllValidation, ProdGroupController.getAll);
@@ -104,15 +111,6 @@ router.delete('/group/:id', ensureAuthenticated, ProdGroupController.deleteGroup
 router.post('/group/product/:id', ensureAuthenticated, ProdGroupController.putProdInGroupValidation, ProdGroupController.putProdInGroup);
 router.get('/group/product/:id', ensureAuthenticated, ProdGroupController.getProductsByIdValidation, ProdGroupController.getProductsById);
 router.post('/group/product/remove/:id', ensureAuthenticated, ProdGroupController.deleteProductByIdValidation, ProdGroupController.deleteProductById);
-
-
-
-// STOCK
-router.get('/stock', ensureAuthenticated, StockController.getAllValidation, StockController.getAll);
-router.post('/stock', ensureAuthenticated, StockController.createValidation, StockController.create);
-// router.get('/stock/:id', ensureAuthenticated, StockController.getAllByIdValidation, StockController.getAllById);
-router.put('/stock/:id', ensureAuthenticated, ensureAdmin, StockController.updateByIdValidation, StockController.updateById);
-// router.delete('/stock/:id', ensureAuthenticated, ensureAdmin, StockController.deleteByIdValidation, StockController.deleteById);
 
 
 
@@ -179,6 +177,17 @@ router.put('/nfemitter/:emitter_id/linkSupplier', ensureAdmin, NFEmitterControll
 router.post('/supplier-prod-map', ensureAdmin, SupplierProdMapController.createValidation, SupplierProdMapController.create);
 router.get('/supplier-prod-map/:supplier_id/:supplier_prod_id', ensureAdmin, SupplierProdMapController.getMapValidation, SupplierProdMapController.getMap);
 
+
+
+// REPORTS
+router.get('/report', ensureAdmin, ReportController.getReportDataValidation, ReportController.getReportData);
+
+
+
+// DEFAULT ROUTE
+router.get('/', (_, res) => {
+    res.send('API is running');
+});
 
 
 export { router };

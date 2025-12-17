@@ -21,3 +21,7 @@ export const randNumber = (length: number): number => {
     }
     return Number(result);
 };
+
+export const randNumberRange = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};

@@ -1,6 +1,7 @@
-import { ConflictError, NotFoundError } from '../../../server/shared/Errors';
+import AppError, { ConflictError, NotFoundError } from '../../../server/shared/Errors';
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
+import { movementStockBatch } from '../../Stock/utils/MovementStockBatch';
 
 export const completePurchase = async (purchase_id: number): Promise<void> => {
     try {
@@ -21,7 +22,8 @@ export const completePurchase = async (purchase_id: number): Promise<void> => {
                     'pack_id',
                     'prod_id',
                     'pack_deleted_qnt',
-                    'quantity'
+                    'quantity',
+                    'price'
                 )
                 .where({ purchase_id });
 
@@ -43,37 +45,43 @@ export const completePurchase = async (purchase_id: number): Promise<void> => {
             }
 
             // Acumula o total de estoque por produto
-            const stockAdjustments = new Map<number, number>();
+            const stockAdjustments = new Map<number, { quantity: number; unit_cost: number }>();
 
             for (const item of details) {
                 const packSize = item.type === 'PACK' ? (item.pack_deleted_qnt ?? packSizes.get(item.pack_id!) ?? 1) : 1;
                 const totalQty = item.quantity * packSize;
+                const unit_cost = item.price / packSize;
 
-                const current = stockAdjustments.get(item.prod_id) ?? 0;
-                stockAdjustments.set(item.prod_id, current + totalQty);
+                const current = stockAdjustments.get(item.prod_id)?.quantity ?? 0;
+                stockAdjustments.set(item.prod_id, { quantity: current + totalQty, unit_cost: unit_cost });
             }
 
             // Converte o mapa em array de objetos pra inserir em lote
-            const stockRows = Array.from(stockAdjustments.entries()).map(([prod_id, stockInc]) => ({
+            const stockRows = Array.from(stockAdjustments.entries()).map(([prod_id, { quantity, unit_cost }]) => ({
                 prod_id,
-                stock: stockInc,
-                updated_at: new Date()
+                quantity,
+                unit_cost
             }));
 
-            // Faz insert em lote com UPSERT (ON CONFLICT)
-            await trx(ETableNames.stocks)
-                .insert(stockRows)
-                .onConflict('prod_id')
-                .merge({
-                    stock: trx.raw('?? + EXCLUDED.??', ['stocks.stock', 'stock']),
-                    updated_at: trx.fn.now()
-                });
+            // Atualiza o estoque
+            await movementStockBatch(trx, {
+                direction: 'in',
+                origin_type: 'purchase',
+                origin_id: purchase_id,
+                rows: stockRows.map(r => ({
+                    prod_id: r.prod_id,
+                    quantity: r.quantity,
+                    unit_cost: r.unit_cost,
+                    notes: `Compra #${purchase_id}`
+                }))
+            });
 
             // Marca a compra como finalizada
             await trx(ETableNames.purchases).where({ id: purchase_id }).update({ effected: true, updated_at: trx.fn.now() });
         });
     } catch (e) {
-        console.error(e);
-        throw e;
+        if (e instanceof AppError) throw e;
+        console.log(e);
+        throw new AppError('Erro ao completar compra');
     }
 };

@@ -15,5 +15,7 @@ export * from './ProdOutput';
 export * from './SaleDetails';
 export * from './CashOutflow';
 export * from './Product_group';
+export * from './product_costs';
+export * from './stock_movements';
 export * from './Purchase_details';
 export * from './Supplier_prod_map';

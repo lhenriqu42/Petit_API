@@ -9,10 +9,10 @@ export interface IResponse {
 export const getSectorStock = async (sectors = [1, 2, 3, 4]): Promise<IResponse[] | Error> => {
     try {
         const result = await Knex<IResponse[]>(ETableNames.products)
-            .join(ETableNames.stocks, `${ETableNames.stocks}.prod_id`, `${ETableNames.products}.id`)
-            .select(`${ETableNames.products}.sector`, Knex.raw(`sum(${ETableNames.stocks}.stock) as stock`))
+            .join(ETableNames.product_costs, `${ETableNames.product_costs}.prod_id`, `${ETableNames.products}.id`)
+            .select(`${ETableNames.products}.sector`, Knex.raw(`sum(${ETableNames.product_costs}.stock_quantity) as stock`))
             .whereIn(`${ETableNames.products}.sector`, sectors)
-            .andWhere(`${ETableNames.stocks}.stock`, '>', 0)
+            .andWhere(`${ETableNames.product_costs}.stock_quantity`, '>', 0)
             .groupBy(`${ETableNames.products}.sector`)
             .orderBy('sector');
 

@@ -2,10 +2,11 @@ import AppError, { NotFoundError, ValidationError } from '../../../server/shared
 import { ETableNames } from '../../../server/database/ETableNames';
 import { Knex } from '../../../server/database/knex';
 import { ISaleDetails } from '../../../server/database/models';
+import { movementStockBatch } from '../../Stock/utils/MovementStockBatch';
 
 interface ISaleDetailInput extends Omit<ISaleDetails, 'id' | 'created_at' | 'updated_at' | 'pricetotal' | 'sale_id'> { }
 
-export const create = async (saleDetails: ISaleDetailInput[], obs?: string | null, ): Promise<number> => {
+export const create = async (saleDetails: ISaleDetailInput[], obs?: string | null,): Promise<number> => {
     try {
         return await Knex.transaction(async trx => {
             // 🔹 1. Busca caixa aberto
@@ -33,24 +34,17 @@ export const create = async (saleDetails: ISaleDetailInput[], obs?: string | nul
 
 
 
-            // 🔹 5. Atualiza estoque em lote (com UPSERT)
-            const stockAdjustments = new Map<number, number>();
-            for (const item of saleDetails) {
-                const current = stockAdjustments.get(item.prod_id) ?? 0;
-                stockAdjustments.set(item.prod_id, current - item.quantity);
-            }
-            const stockRows = Array.from(stockAdjustments.entries()).map(([prod_id, stockDiff]) => ({
-                prod_id,
-                stock: stockDiff,
-                updated_at: trx.fn.now(),
-            }));
-            await trx(ETableNames.stocks)
-                .insert(stockRows)
-                .onConflict('prod_id')
-                .merge({
-                    stock: trx.raw('?? + EXCLUDED.??', ['stocks.stock', 'stock']),
-                    updated_at: trx.fn.now(),
-                });
+            // 🔹 5. Atualiza estoque em lote
+            await movementStockBatch(trx, {
+                direction: 'out',
+                origin_type: 'sale',
+                origin_id: sale_id,
+                rows: saleDetailsRows.map(r => ({
+                    prod_id: r.prod_id,
+                    quantity: r.quantity,
+                    notes: `Venda #${sale_id}`
+                }))
+            });
 
             return sale_id;
         });
