@@ -7,19 +7,19 @@ import { movementStock } from '../../Stock/utils/MovementStock';
 export const output = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'>): Promise<number> => {
     try {
         const result = await Knex.transaction(async (trx) => {
-            const [outputId] = await trx(ETableNames.prod_output).insert(prod_output);
+            const [output] = await trx(ETableNames.prod_output).insert(prod_output).returning('id');
             await movementStock(
                 trx,
                 {
                     direction: 'out',
                     prod_id: prod_output.prod_id,
                     quantity: prod_output.quantity,
-                    notes: `Output ID: ${outputId} - Reason: ${prod_output.reason} - Desc: ${prod_output.desc || 'No description'}`,
-                    origin_id: outputId,
+                    notes: `Output ID: ${output.id} - Reason: ${prod_output.reason} - Desc: ${prod_output.desc || 'No description'}`,
+                    origin_id: output.id,
                     origin_type: 'prod_output'
                 }
             );
-            return outputId;
+            return output.id;
         });
         return result;
     } catch (e) {
