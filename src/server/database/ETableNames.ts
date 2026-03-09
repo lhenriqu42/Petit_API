@@ -4,7 +4,7 @@ export enum ETableNames {
     saleDetails = 'sale_details',
     fincashs = 'fincashs',
     cashOutflows = 'cash_outflows',
-    stocks = 'stocks',
+    // stocks = 'stocks', // Deprecated: Use 'product_costs' table instead
     groups = 'groups',
     product_groups = 'product_groups',
     validities = 'validities',
@@ -12,4 +12,12 @@ export enum ETableNames {
     suppliers = 'suppliers',
     prod_output = 'prod_output',
     payments = 'payments',
+    purchases = 'purchases',
+    purchase_details = 'purchase_details',
+    packs = 'packs',
+    prod_packs = 'prod_packs',
+    supplier_prod_map = 'supplier_prod_map',
+    nf_emitters = 'nf_emitters',
+    stock_movements = 'stock_movements',
+    product_costs = 'product_costs',
 }

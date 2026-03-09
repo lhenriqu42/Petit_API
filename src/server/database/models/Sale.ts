@@ -1,6 +1,6 @@
 export interface ISale {
     id: number,
-    obs: string,
+    obs: string | null,
     fincash_id: number,
     created_at: Date,
     updated_at: Date,
